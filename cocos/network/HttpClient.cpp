@@ -402,6 +402,7 @@ HttpClient::HttpClient()
 , _timeoutForRead(60)
 , _threadCount(0)
 , _cookie(nullptr)
+, _latency(0)
 , _requestSentinel(new HttpRequest())
 {
     CCLOG("In the constructor of HttpClient!");
@@ -616,6 +617,11 @@ void HttpClient::setTimeoutForRead(int value)
 {
     std::lock_guard<std::mutex> lock(_timeoutForReadMutex);
     _timeoutForRead = value;
+}
+    
+void HttpClient::setLatency(double latencyValue)
+{
+    _latency = latencyValue;
 }
     
 int HttpClient::getTimeoutForRead()
