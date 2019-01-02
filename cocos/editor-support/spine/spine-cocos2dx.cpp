@@ -73,7 +73,8 @@ void _spAtlasPage_createTexture (spAtlasPage* self, const char* path) {
 }
 
 void _spAtlasPage_disposeTexture (spAtlasPage* self) {
-	((Texture2D*)self->rendererObject)->release();
+//    if(self->rendererObject)
+//        ((Texture2D*)self->rendererObject)->release();
 }
 
 char* _spUtil_readFile (const char* path, int* length) {
