@@ -34,6 +34,17 @@ THE SOFTWARE.
 #include "platform/winrt/WICImageLoader-winrt.h"
 #endif
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+#ifdef LINUX
+extern "C"
+{
+#if CC_USE_JPEG
+#include "../../external/jpegturbo/include/jpegturbolib.h"
+#endif
+}
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 // premultiply alpha, or the effect will wrong when want to use other pixel format in Texture2D,
 // such as RGB888, RGB5A1
 #define CC_RGB_PREMULTIPLY_ALPHA(vr, vg, vb, va) \
@@ -58,6 +69,15 @@ typedef struct _MipmapInfo
     int len;
     _MipmapInfo():address(NULL),len(0){}
 }MipmapInfo;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+#ifdef LINUX
+#if CC_USE_WEBP
+#include "../../external/webp/include/linux/decode.h"
+#include "../../external/webp/include/linux/encode.h"
+#endif // CC_USE_WEBP
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
 class CC_DLL Image : public Ref
 {
@@ -120,7 +140,11 @@ public:
     @param path   the absolute file path.
     @return true if loaded correctly.
     */
-    bool initWithImageFile(const std::string& path);
+    bool initWithImageFile(const std::string& path
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+                           ,bool useAlpha = false
+// CROWDSTAR_COCOSPATCH_END
+   );
 
     /**
     @brief Load image from stream buffer.
@@ -159,6 +183,28 @@ public:
      @param    isToRGB        whether the image is saved as RGB format.
      */
     bool saveToFile(const std::string &filename, bool isToRGB = true);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    inline int               getCroppedWidth()       { return _croppedWidth; }
+    inline int               getCroppedHeight()      { return _croppedHeight; }
+    
+    void setBenchmark(bool benchmark) { _benchmark = benchmark; }
+
+#ifdef LINUX
+    struct JpgConfig
+    {
+        J_DCT_METHOD dct_method;
+        int quality;
+        
+        JpgConfig() : dct_method(JDCT_IFAST), quality(90) {}
+    };
+    
+    inline JpgConfig &getJpgConfig() { return _jpgConfig; }
+    inline WebPConfig &getWebpConfig() { return _webpConfig; }
+    
+    std::pair<char *, size_t> getImageData(const std::string &contentType, bool isToRGB = true);
+#endif
+// CROWDSTAR_COCOSPATCH_BEND
 
 protected:
 #if CC_USE_WIC
@@ -183,6 +229,17 @@ protected:
     
     void premultipliedAlpha();
     
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+#ifdef LINUX
+    JpgConfig _jpgConfig;
+    WebPConfig _webpConfig;
+    
+    std::pair<char *, size_t> getPngData(bool isToRGB = true);
+    std::pair<char *, size_t> getJpgData(bool isToRGB = true);
+    std::pair<char *, size_t> getWebpData(const std::string &contentType, bool isToRGB = true);
+#endif
+// CROWDSTAR_COCOSPATCH_END
+    
 protected:
     /**
      @brief Determine how many mipmaps can we have.
@@ -206,6 +263,17 @@ protected:
     bool _hasPremultipliedAlpha;
     std::string _filePath;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    int _croppedWidth;
+    int _croppedHeight;
+    
+    bool _useAlpha;
+    bool _benchmark;
+    
+    // benchmark timers
+    std::chrono::high_resolution_clock::time_point b0;
+    std::chrono::high_resolution_clock::time_point b1;
+// CROWDSTAR_COCOSPATCH_END
 
 protected:
     // noncopyable

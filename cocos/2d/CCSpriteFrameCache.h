@@ -43,6 +43,12 @@ class Sprite;
 class Texture2D;
 class PolygonInfo;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// [GMR.BPrieto] SpriteFrameNameGenerator allow us to override the way spriteframe filenames are generated
+// though a static function
+typedef std::function<std::string(const std::string&, const std::string&)> SpriteFrameNameGenerator;
+// CROWDSTAR_COCOSPATCH_END
+
 /**
  * @addtogroup _2d
  * @{
@@ -108,7 +114,18 @@ public:
      * @js NA
      */
     CC_DEPRECATED_ATTRIBUTE static void purgeSharedSpriteFrameCache() { return SpriteFrameCache::destroyInstance(); }
-
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+    /** Sets a function to generate the sprite frame name. This allows to set a specific way to
+     * manage the frame naming in the game, for example to identify the original plist, or follow
+     * a certain naming convention
+     *
+     * @param Function pointer to a sprite frame name generator
+     * @return void
+     */
+    static void setSpriteFrameNameGenerator(SpriteFrameNameGenerator generator);
+// CROWDSTAR_COCOSPATCH_END
+    
     /** Destructor.
      * @js NA
      * @lua NA
@@ -245,12 +262,18 @@ protected:
 
     /*Adds multiple Sprite Frames with a dictionary. The texture will be associated with the created sprite frames.
      */
-    void addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D *texture);
-    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+    void addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D *texture, const std::string &plist);
+// CROWDSTAR_COCOSPATCH_END
+
     /*Adds multiple Sprite Frames with a dictionary. The texture will be associated with the created sprite frames.
      */
-    void addSpriteFramesWithDictionary(ValueMap& dictionary, const std::string &texturePath);
-    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+    void addSpriteFramesWithDictionary(ValueMap& dictionary, const std::string &texturePath, const std::string &plist);
+// CROWDSTAR_COCOSPATCH_END
+
     /** Removes multiple Sprite Frames from Dictionary.
     * @since v0.99.5
     */
@@ -272,6 +295,10 @@ protected:
     Map<std::string, SpriteFrame*> _spriteFrames;
     ValueMap _spriteFramesAliases;
     std::set<std::string>*  _loadedFileNames;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+    static SpriteFrameNameGenerator _spriteFrameNameGenerator;
+// CROWDSTAR_COCOSPATCH_END
 };
 
 // end of _2d group

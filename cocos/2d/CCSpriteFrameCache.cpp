@@ -49,6 +49,10 @@ NS_CC_BEGIN
 
 static SpriteFrameCache *_sharedSpriteFrameCache = nullptr;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+SpriteFrameNameGenerator SpriteFrameCache::_spriteFrameNameGenerator = nullptr;
+// CROWDSTAR_COCOSPATCH_END
+
 SpriteFrameCache* SpriteFrameCache::getInstance()
 {
     if (! _sharedSpriteFrameCache)
@@ -59,6 +63,13 @@ SpriteFrameCache* SpriteFrameCache::getInstance()
 
     return _sharedSpriteFrameCache;
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+void SpriteFrameCache::setSpriteFrameNameGenerator(SpriteFrameNameGenerator generator)
+{
+    SpriteFrameCache::_spriteFrameNameGenerator = generator;
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void SpriteFrameCache::destroyInstance()
 {
@@ -135,7 +146,10 @@ void SpriteFrameCache::initializePolygonInfo(const Size &textureSize,
     info.setRect(Rect(0, 0, spriteSize.width, spriteSize.height));
 }
 
-void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D* texture)
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added plist parameter to method
+void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D* texture, const std::string &plist)
+// CROWDSTAR_COCOSPATCH_END
 {
     /*
     Supported Zwoptex Formats:
@@ -177,7 +191,14 @@ void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dictionary, Textu
     for (auto& iter : framesDict)
     {
         ValueMap& frameDict = iter.second.asValueMap();
-        std::string spriteFrameName = iter.first;
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added that if the frame name generators exists, use it, if not, the iter.first
+        std::string spriteFrameName =  SpriteFrameCache::_spriteFrameNameGenerator ?
+            _spriteFrameNameGenerator(plist, iter.first) :
+            iter.first;
+// CROWDSTAR_COCOSPATCH_END
+        
         SpriteFrame* spriteFrame = _spriteFrames.at(spriteFrameName);
         if (spriteFrame)
         {
@@ -296,7 +317,9 @@ void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dictionary, Textu
     CC_SAFE_DELETE(image);
 }
 
-void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dict, const std::string &texturePath)
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dict, const std::string &texturePath, const std::string &plist)
+// CROWDSTAR_COCOSPATCH_END
 {
     std::string pixelFormatName;
     if (dict.find("metadata") != dict.end())
@@ -340,7 +363,10 @@ void SpriteFrameCache::addSpriteFramesWithDictionary(ValueMap& dict, const std::
     
     if (texture)
     {
-        addSpriteFramesWithDictionary(dict, texture);
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+        addSpriteFramesWithDictionary(dict, texture, plist);
+// CROWDSTAR_COCOSPATCH_END
     }
     else
     {
@@ -358,14 +384,20 @@ void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist, Texture
     std::string fullPath = FileUtils::getInstance()->fullPathForFilename(plist);
     ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(fullPath);
 
-    addSpriteFramesWithDictionary(dict, texture);
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+    addSpriteFramesWithDictionary(dict, texture, plist);
+// CROWDSTAR_COCOSPATCH_END
+
     _loadedFileNames->insert(plist);
 }
 
 void SpriteFrameCache::addSpriteFramesWithFileContent(const std::string& plist_content, Texture2D *texture)
 {
     ValueMap dict = FileUtils::getInstance()->getValueMapFromData(plist_content.c_str(), static_cast<int>(plist_content.size()));
-    addSpriteFramesWithDictionary(dict, texture);
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+    addSpriteFramesWithDictionary(dict, texture, plist_content);
+// CROWDSTAR_COCOSPATCH_END
 }
 
 void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist, const std::string& textureFileName)
@@ -378,7 +410,10 @@ void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist, const s
     
     const std::string fullPath = FileUtils::getInstance()->fullPathForFilename(plist);
     ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(fullPath);
-    addSpriteFramesWithDictionary(dict, textureFileName);
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+    addSpriteFramesWithDictionary(dict, textureFileName, plist);
+// CROWDSTAR_COCOSPATCH_END
     _loadedFileNames->insert(plist);
 }
 
@@ -426,7 +461,12 @@ void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist)
 
             CCLOG("cocos2d: SpriteFrameCache: Trying to use file %s as texture", texturePath.c_str());
         }
-        addSpriteFramesWithDictionary(dict, texturePath);
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
+// Added the plist parameter
+        addSpriteFramesWithDictionary(dict, texturePath, plist);
+// CROWDSTAR_COCOSPATCH_END
+        
         _loadedFileNames->insert(plist);
     }
 }

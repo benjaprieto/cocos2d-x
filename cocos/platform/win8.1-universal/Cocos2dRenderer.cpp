@@ -17,7 +17,9 @@
 */
 
 #include "Cocos2dRenderer.h"
-#include "AppDelegate.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(RemovedAppDelegateInclude)
+// #include "AppDelegate.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "platform/winrt/CCGLViewImpl-winrt.h"
 #include "platform/CCApplication.h"
 #include "renderer/CCTextureCache.h"

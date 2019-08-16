@@ -75,6 +75,25 @@ enum {
     kShaderType_ETC1ASPositionTextureGray,
     kShaderType_ETC1ASPositionTextureGray_noMVP,
     kShaderType_LayerRadialGradient,
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+    kShaderType_CS_GreenScreen,
+    kShaderType_CS_BlurEdge,
+    kShaderType_CS_GreenScreenDroid,
+    kShaderType_CS_Mask,
+    kShaderType_CS_MaskiPhone4,
+    kShaderType_CS_GreyToColorShader,
+    kShaderType_CS_ColorToGreyShader,
+    kShaderType_CS_ForegroundImageMaskShader,
+//    kShaderType_CS_CircleMaskShader,
+    kShaderType_CS_TintShader,
+    kShaderType_CS_RadShader,
+    kShaderType_CS_GlowVertShader,
+    kShaderType_CS_GlowHorizShader,
+    kShaderType_CS_ScissorShader,
+    kShaderType_CS_GlowSampler,
+// CROWDSTAR_COCOSPATCH_END
+    
     kShaderType_MAX,
 };
 
@@ -305,6 +324,71 @@ void GLProgramCache::loadDefaultGLPrograms()
     p = new(std::nothrow) GLProgram();
     loadDefaultGLProgram(p, kShaderType_LayerRadialGradient);
     _programs.emplace(GLProgram::SHADER_LAYER_RADIAL_GRADIENT, p);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+#ifdef ANDROID
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GreenScreenDroid);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GreenScreenDroid, p);
+#else
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GreenScreen);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GreenScreen, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_Mask);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_Mask, p);
+#endif
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_BlurEdge);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_BlurEdge, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_MaskiPhone4);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_MaskiPhone4, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GreyToColorShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GreyToColorShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_ColorToGreyShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_ColorToGreyShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_ForegroundImageMaskShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_ForegroundImgMaskShader, p);
+    /**
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_CircleMaskShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_CircleMaskShader, p);
+   **/
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_TintShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_TintShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_RadShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_RadShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowVertShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GlowVertShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowHorizShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GlowHorizShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_ScissorShader);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_ScissorShader, p);
+    
+    p = new (std::nothrow) GLProgram();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowSampler);
+    _programs.emplace(GLProgram::SHADER_CROWDSTAR_GlowSampler, p);
+// CROWDSTAR_COCOSPATCH_END
+    
 }
 
 void GLProgramCache::reloadDefaultGLPrograms()
@@ -476,6 +560,69 @@ void GLProgramCache::reloadDefaultGLPrograms()
     p = getGLProgram(GLProgram::SHADER_LAYER_RADIAL_GRADIENT);
     loadDefaultGLProgram(p, kShaderType_LayerRadialGradient);
     _programs.emplace(GLProgram::SHADER_LAYER_RADIAL_GRADIENT, p);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+#ifdef ANDROID
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GreenScreenDroid);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GreenScreenDroid);
+#else
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GreenScreen);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GreenScreen);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_Mask);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_Mask);
+#endif
+
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_BlurEdge);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_BlurEdge);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_MaskiPhone4);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_MaskiPhone4);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GreyToColorShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GreyToColorShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_ColorToGreyShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_ColorToGreyShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_ForegroundImgMaskShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_ForegroundImageMaskShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_TintShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_TintShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_RadShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_RadShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GlowVertShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowVertShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GlowHorizShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowHorizShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_ScissorShader);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_ScissorShader);
+    
+    p = getGLProgram(GLProgram::SHADER_CROWDSTAR_GlowSampler);
+    p->reset();
+    loadDefaultGLProgram(p, kShaderType_CS_GlowSampler);
+
+// CROWDSTAR_COCOSPATCH_END
+    
 }
 
 void GLProgramCache::reloadDefaultGLProgramsRelativeToLights()
@@ -632,6 +779,52 @@ void GLProgramCache::loadDefaultGLProgram(GLProgram *p, int type)
         case kShaderType_LayerRadialGradient:
             p->initWithByteArrays(ccPosition_vert, ccShader_LayerRadialGradient_frag);
             break;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+        case kShaderType_CS_GreenScreen:
+            p->initWithByteArrays(ccPositionTextureColor_vert, csGreenScreen_frag);
+            break;
+        case kShaderType_CS_GreenScreenDroid:
+            p->initWithByteArrays(ccPositionTextureColor_vert, csGreenScreenDroid_frag);
+            break;
+        case kShaderType_CS_BlurEdge:
+            p->initWithByteArrays(ccPositionTextureColor_vert, csBlurEdge_frag);
+            break;
+        case kShaderType_CS_Mask:
+            p->initWithByteArrays(ccPositionTextureColor_vert, csMask_frag);
+            break;
+        case kShaderType_CS_MaskiPhone4:
+            p->initWithByteArrays(ccPositionTextureColor_vert, csMask4_frag);
+            break;
+        case kShaderType_CS_GreyToColorShader:
+            p->initWithByteArrays(csPositionTextureColor_vert, csGreyToColor_frag);
+            break;
+        case kShaderType_CS_ColorToGreyShader:
+            p->initWithByteArrays(csPositionTextureColor_vert, csColorToGrey_frag);
+            break;
+        case kShaderType_CS_ForegroundImageMaskShader:
+            p->initWithByteArrays(csPositionTextureColor_vert, csForegroundImgMask_frag);
+            break;
+        case kShaderType_CS_TintShader:
+            p->initWithByteArrays(csPositionTextureA8Color_no_MVP_vert, csTint_frag);
+            break;
+        case kShaderType_CS_RadShader:
+            p->initWithByteArrays(csPositionTextureA8Color_no_MVP_vert, csRadialGradient_frag);
+            break;
+        case kShaderType_CS_GlowVertShader:
+            p->initWithByteArrays(csBlurVertical_vert, csGlow_frag);
+            break;
+        case kShaderType_CS_GlowHorizShader:
+            p->initWithByteArrays(csBlurHorizontal_vert, csGlow_frag);
+            break;
+        case kShaderType_CS_ScissorShader:
+            p->initWithByteArrays(csPositionTextureColor_vert, csScissor_frag);
+            break;
+        case kShaderType_CS_GlowSampler:
+            p->initWithByteArrays(csPositionTextureColor_vert, csGlowSampler_frag);
+            break;
+// CROWDSTAR_COCOSPATCH_END
+            
         default:
             CCLOG("cocos2d: %s:%d, error shader type", __FUNCTION__, __LINE__);
             return;

@@ -25,7 +25,9 @@ THE SOFTWARE.
 #ifndef __DICTIONARYHELPER_H__
 #define __DICTIONARYHELPER_H__
 
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "editor-support/cocostudio/CocosStudioExport.h"
 
 #define DICTOOL DictionaryHelper::getInstance()

@@ -61,6 +61,14 @@ public:
      */
     int run();
 
+    // CROWDSTAR_COCOSPATCH_BEGIN(LinuxMainLoopExtensions)
+	void startMainLoop(std::function<void()> callback);
+	void stopMainLoop();
+	void end();
+	
+	bool isMainLoopRunning() const { return _isMainLoopRunning; }
+    // CROWDSTAR_COCOSPATCH_END
+
     /**
      @brief Get current application instance.
      @return Current application instance pointer.
@@ -111,6 +119,10 @@ public:
 protected:
     long       _animationInterval;  //micro second
     std::string _resourceRootPath;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(LinuxMainLoopExtensions)
+	bool _isMainLoopRunning;
+// CROWDSTAR_COCOSPATCH_END
     
     static Application * sm_pSharedApplication;
 };

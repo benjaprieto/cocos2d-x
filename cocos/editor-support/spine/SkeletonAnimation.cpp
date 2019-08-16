@@ -72,14 +72,21 @@ static _TrackEntryListeners* getListeners (spTrackEntry* entry) {
 SkeletonAnimation* SkeletonAnimation::createWithData (spSkeletonData* skeletonData, bool ownsSkeletonData) {
 	SkeletonAnimation* node = new SkeletonAnimation();
 	node->initWithData(skeletonData, ownsSkeletonData);
-	node->autorelease();
+// CROWDSTAR_COCOSPATCH_BEGIN(SkeletonDontAutorelease)
+// @todo [GMR.Ben] Either document the reason for this patch, or remove it
+// Commented:
+//	node->autorelease();
+// CROWDSTAR_COCOSPATCH_END
 	return node;
 }
 
 SkeletonAnimation* SkeletonAnimation::createWithJsonFile (const std::string& skeletonJsonFile, spAtlas* atlas, float scale) {
 	SkeletonAnimation* node = new SkeletonAnimation();
 	node->initWithJsonFile(skeletonJsonFile, atlas, scale);
-	node->autorelease();
+// CROWDSTAR_COCOSPATCH_BEGIN(SkeletonDontAutorelease)
+// Commented:
+//	node->autorelease();
+// CROWDSTAR_COCOSPATCH_END
 	return node;
 }
 
@@ -87,7 +94,17 @@ SkeletonAnimation* SkeletonAnimation::createWithJsonFile (const std::string& ske
 	SkeletonAnimation* node = new SkeletonAnimation();
 	spAtlas* atlas = spAtlas_createFromFile(atlasFile.c_str(), 0);
 	node->initWithJsonFile(skeletonJsonFile, atlas, scale);
-	node->autorelease();
+// CROWDSTAR_COCOSPATCH_BEGIN(SkeletonDontAutorelease)
+// Commented:
+// 
+//	node->autorelease();
+//
+// Added:
+    if(!node->getSkeleton() || !node->getSkeleton()->data)
+    {
+        return nullptr;
+    }
+// CROWDSTAR_COCOSPATCH_END
 	return node;
 }
 

@@ -34,5 +34,11 @@ CC_DLL const char* cocos2dVersion()
     return "cocos2d-x-3.16";
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(GetCPlusPlusVersion)
+CC_DLL long cocos2dCPlusPlusVersion()
+{
+    return __cplusplus;
+}
+// CROWDSTAR_COCOSPATCH_END
 NS_CC_END
 

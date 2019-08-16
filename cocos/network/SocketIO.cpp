@@ -39,7 +39,12 @@
 #include "network/HttpClient.h"
 
 #include "json/rapidjson.h"
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+// Was:
+// #include "json/document-wrapper.h"
+//
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "json/stringbuffer.h"
 #include "json/writer.h"
 

@@ -84,7 +84,10 @@ public:
      * @see release, autorelease
      * @js NA
      */
-    void retain();
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+// Added virtual
+    virtual void retain();
+// CROWDSTAR_COCOSPATCH_END
 
     /**
      * Releases the ownership immediately.
@@ -97,7 +100,10 @@ public:
      * @see retain, autorelease
      * @js NA
      */
-    void release();
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+// Added virtual
+    virtual void release();
+// CROWDSTAR_COCOSPATCH_END
 
     /**
      * Releases the ownership sometime soon automatically.
@@ -114,7 +120,10 @@ public:
      * @js NA
      * @lua NA
      */
-    Ref* autorelease();
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+// Added virtual
+    virtual Ref* autorelease();
+// CROWDSTAR_COCOSPATCH_END
 
     /**
      * Returns the Ref's current reference count.
@@ -167,6 +176,9 @@ public:
 #if CC_REF_LEAK_DETECTION
 public:
     static void printLeaks();
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetection)
+    static int shutdownStarted;
+// CROWDSTAR_COCOSPATCH_END
 #endif
 };
 

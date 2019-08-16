@@ -30,6 +30,9 @@
 
 #include "ui/UIEditBox/UIEditBox.h"
 #include <jni.h>
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+#include "jni/Java_org_cocos2dx_lib_Cocos2dxHelper.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "platform/android/jni/JniHelper.h"
 #include "2d/CCLabel.h"
 #include "base/ccUTF8.h"
@@ -211,6 +214,18 @@ void EditBoxImplAndroid::nativeCloseKeyboard()
 {
     JniHelper::callStaticVoidMethod(editBoxClassName, "closeKeyboard", _editBoxIndex);
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBoxImplAndroid::setNativeInputRestriction(int inputRestriction)
+{
+    setInputRestrictionEditBoxJNI(_editBoxIndex, inputRestriction);
+}
+
+void EditBoxImplAndroid::setNativeUneditableTextLength(int uneditableTextLength)
+{
+    setUneditableTextLengthEditBoxJNI(_editBoxIndex, uneditableTextLength);
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void editBoxEditingDidBegin(int index)
 {

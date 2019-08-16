@@ -59,6 +59,9 @@ public:
         _image = evas_object_image_filled_add(evas);
         evas_object_show(_image);
         player_create(&_player);
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+        player_set_looping(_player, videoPlayer->isLooping() );
+// CROWDSTAR_COCOSPATCH_END
 
         evas_object_event_callback_add(_image, EVAS_CALLBACK_MOUSE_UP, _VideoPlayerTizen::mouse_up_cb, this);
         eext_object_event_callback_add(app->_win, EEXT_CALLBACK_BACK, _VideoPlayerTizen::win_back_cb, this);
@@ -79,15 +82,21 @@ public:
 
     static void mouse_up_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
     {
-        _VideoPlayerTizen* videoPlayerTizen = (_VideoPlayerTizen*)data;
-        if (videoPlayerTizen->_videoPlayer->isPlaying())
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+// Added condition that the input must be enabled
+        if (_videoPlayer->_isUserInputEnabled())
         {
-            videoPlayerTizen->_videoPlayer->pause();
+            _VideoPlayerTizen* videoPlayerTizen = (_VideoPlayerTizen*)data;
+            if (videoPlayerTizen->_videoPlayer->isPlaying())
+            {
+                videoPlayerTizen->_videoPlayer->pause();
+            }
+            else
+            {
+                videoPlayerTizen->_videoPlayer->resume();
+            }
         }
-        else
-        {
-            videoPlayerTizen->_videoPlayer->resume();
-        }
+// CROWDSTAR_COCOSPATCH_END
     }
 
     static void win_back_cb(void *data, Evas_Object *obj, void *event_info) {
@@ -121,6 +130,11 @@ VideoPlayer::VideoPlayer()
 , _fullScreenEnabled(false)
 , _fullScreenDirty(false)
 , _keepAspectRatioEnabled(false)
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+, _isLooping(false)
+, _isUserInputEnabled(true)
+, _styleType(StyleType::DEFAULT)
+// CROWDSTAR_COCOSPATCH_END
 {
     _videoView = (void*) new (std::nothrow) _VideoPlayerTizen(this);
 
@@ -156,6 +170,26 @@ void VideoPlayer::setURL(const std::string& videoUrl)
 
     _VideoPlayerTizen* impl = (_VideoPlayerTizen*)_videoView;
     player_set_uri(impl->_player, videoUrl.c_str());
+}
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+void VideoPlayer::setLooping(bool looping)
+{
+    _isLooping = looping;
+    _VideoPlayerTizen* impl = (_VideoPlayerTizen*)_videoView;
+   player_set_looping(impl->_player, looping );
+}
+
+void VideoPlayer::setUserInputEnabled(bool enableInput)
+{
+    _isUserInputEnabled = enableInput
+    
+}
+// CROWDSTAR_COCOSPATCH_END
+
+void VideoPlayer::setStyle(StyleType style)
+{
+    _styleType = style;
 }
 
 void VideoPlayer::draw(Renderer* renderer, const Mat4 &transform, uint32_t flags)
@@ -435,6 +469,11 @@ void VideoPlayer::copySpecialProperties(Widget *widget)
     if (videoPlayer)
     {
         _isPlaying = videoPlayer->_isPlaying;
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+        _isLooping = videoPlayer->_isLooping;
+        _isUserInputEnabled = videoPlayer->_isUserInputEnabled;
+        _styleType = videoPlayer->_styleType;
+// CROWDSTAR_COCOSPATCH_END
         _fullScreenEnabled = videoPlayer->_fullScreenEnabled;
         _fullScreenDirty = videoPlayer->_fullScreenDirty;
         _videoURL = videoPlayer->_videoURL;

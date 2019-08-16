@@ -102,6 +102,16 @@ bool EditBoxImplLinux::isEditing()
     return false;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBoxImplLinux::setNativeInputRestriction(int inputRestriction) {
+	// not implemented yet
+}
+
+void EditBoxImplLinux::setNativeUneditableTextLength(int uneditableTextLength) {
+	// not implemented yet
+}
+// CROWDSTAR_COCOSPATCH_END
+
 void EditBoxImplLinux::nativeOpenKeyboard()
 {
     std::string text = this->getText();

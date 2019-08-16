@@ -773,7 +773,10 @@ void EventDispatcher::dispatchEventToListeners(EventListenerVector* listeners, c
             {
                 if (l->isEnabled() && !l->isPaused() && l->isRegistered() && onEvent(l))
                 {
-                    shouldStopPropagation = true;
+// CROWDSTAR_COCOSPATCH_BEGIN(StopPriorityListeners)
+// Commented Line!                    
+                    //shouldStopPropagation = true;
+// CROWDSTAR_COCOSPATCH_END                
                     break;
                 }
             }
@@ -899,8 +902,19 @@ void EventDispatcher::dispatchTouchEventToListeners(EventListenerVector* listene
 
 void EventDispatcher::dispatchEvent(Event* event)
 {
-    if (!_isEnabled)
+    // CROWDSTAR_COCOSPATCH_BEGIN(DispatchEventCustomType)
+    // [GMR.Ben] PATCH submitted in Cocos github, still not merged
+    // https://github.com/cocos2d/cocos2d-x/pull/19262/
+    // Original code:
+    //
+    // if (!_isEnabled)
+    //     return;
+    //
+    if (!_isEnabled && !dynamic_cast<EventCustom*>(event)) // dont enforce _isEnabled on EventCustom types
+    {
         return;
+    }
+    // CROWDSTAR_COCOSPATCH_END
     
     updateDirtyFlagForSceneGraph();
     
@@ -934,6 +948,38 @@ void EventDispatcher::dispatchEvent(Event* event)
         
         (this->*pfnDispatchEventToListeners)(listeners, onEvent);
     }
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(DispatchEventCustomType)
+    // [GMR.Ben] PATCH submitted in Cocos github, still not merged
+    // https://github.com/cocos2d/cocos2d-x/pull/19262/
+    /**
+     * For the case of custom events, run the listeners pending to be added to avoid timing issues
+     * This helps to avoid logic issues when adding listeners while dispatching an event
+     **/
+    if (event->getType() == Event::Type::CUSTOM)
+    {
+        // Retrieve all listeners wth the corresponding ID
+        EventListenerVector waitingListeners;
+        for (auto it = _toAddedListeners.begin(); it != _toAddedListeners.end(); it++)
+        {
+            if ( (*it)->getListenerID() == listenerID)
+            {
+                waitingListeners.push_back(*it);
+            }
+        }
+        
+        if (waitingListeners.size() > 0)
+        {
+            auto onEvent = [&event](EventListener* listener) -> bool{
+                event->setCurrentTarget(listener->getAssociatedNode());
+                listener->_onEvent(event);
+                return event->isStopped();
+            };
+            
+            (this->*pfnDispatchEventToListeners)(&waitingListeners, onEvent);
+        }
+    }
+    // CROWDSTAR_COCOSPATCH_END
     
     updateListeners(event);
 }

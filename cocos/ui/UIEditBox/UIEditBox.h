@@ -38,10 +38,10 @@ NS_CC_BEGIN
  * @{
  */
 namespace ui {
-        
+
     class EditBox;
     class EditBoxImpl;
-        
+
     /**
      *@brief Editbox delegate class.
      * It's useful when you want to do some customization during Editbox input event
@@ -63,29 +63,28 @@ namespace ui {
             RETURN
         };
 
-        virtual ~EditBoxDelegate() {};
-            
+        virtual ~EditBoxDelegate() {}
+
         /**
          * This method is called when an edit box gains focus after keyboard is shown.
          * @param editBox The edit box object that generated the event.
          */
-        virtual void editBoxEditingDidBegin(EditBox* editBox) {};
-            
-            
+        virtual void editBoxEditingDidBegin(EditBox* editBox) {}
+
         /**
          * This method is called when an edit box loses focus after keyboard is hidden.
          * @param editBox The edit box object that generated the event.
          * @deprecated Use editBoxEditingDidEndWithAction() instead to receive reason for end
          */
-        CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* editBox) {};
-            
+        CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* editBox) {}
+
         /**
          * This method is called when the edit box text was changed.
          * @param editBox The edit box object that generated the event.
          * @param text The new text.
          */
-        virtual void editBoxTextChanged(EditBox* editBox, const std::string& text) {};
-            
+        virtual void editBoxTextChanged(EditBox* editBox, const std::string& text) {}
+
         /**
          * This method is called when the return button was pressed or the outside area of keyboard was touched.
          * @param editBox The edit box object that generated the event.
@@ -97,16 +96,20 @@ namespace ui {
          * @param editBox The edit box object that generated the event.
          * @param type The reason why editing ended.
          */
-        virtual void editBoxEditingDidEndWithAction(EditBox* editBox, EditBoxEndAction action) {};
+        virtual void editBoxEditingDidEndWithAction(EditBox* editBox, EditBoxEndAction action) {}
+		
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo GMR.Ben Remove editBoxShouldTextChange
+        virtual bool editBoxShouldTextChange(std::string text) = 0;
+// CROWDSTAR_COCOSPATCH_END
     };
-        
+
     /**
      * @brief Class for edit box.
      *
      * You can use this widget to gather small amounts of text from the user.
      *
      */
-        
     class CC_GUI_DLL EditBox
         : public Widget
         , public IMEDelegate
@@ -125,7 +128,20 @@ namespace ui {
             GO,
             NEXT
         };
-            
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+        /**
+         * @brief The EditBox::InputRestrictionFlag defines the flags to set how input is restricted
+         * to enter.
+         */
+        enum class InputRestrictionFlag
+        {
+            ALNUM = 1 << 2,
+            SPACE = 1 << 3,
+            PUNCT = 1 << 4
+        };
+// CROWDSTAR_COCOSPATCH_END
+
         /**
          * @brief The EditBox::InputMode defines the type of text that the user is allowed
          * to enter.
@@ -136,39 +152,39 @@ namespace ui {
              * The user is allowed to enter any text, including line breaks.
              */
             ANY,
-                
+
             /**
              * The user is allowed to enter an e-mail address.
              */
             EMAIL_ADDRESS,
-                
+
             /**
              * The user is allowed to enter an integer value.
              */
             NUMERIC,
-                
+
             /**
              * The user is allowed to enter a phone number.
              */
             PHONE_NUMBER,
-                
+
             /**
              * The user is allowed to enter a URL.
              */
             URL,
-                
+
             /**
              * The user is allowed to enter a real number value.
              * This extends kEditBoxInputModeNumeric by allowing a decimal point.
              */
             DECIMAL,
-                
+
             /**
              * The user is allowed to enter any text, except for line breaks.
              */
             SINGLE_LINE,
         };
-            
+
         /**
          * @brief The EditBox::InputFlag defines how the input text is displayed/formatted.
          */
@@ -179,7 +195,7 @@ namespace ui {
              * obscured whenever possible. This implies EDIT_BOX_INPUT_FLAG_SENSITIVE.
              */
             PASSWORD,
-                
+
             /**
              * Indicates that the text entered is sensitive data that the
              * implementation must never store into a dictionary or table for use
@@ -187,30 +203,30 @@ namespace ui {
              * A credit card number is an example of sensitive data.
              */
             SENSITIVE,
-                
+
             /**
              * This flag is a hint to the implementation that during text editing,
              * the initial letter of each word should be capitalized.
              */
             INITIAL_CAPS_WORD,
-                
+
             /**
              * This flag is a hint to the implementation that during text editing,
              * the initial letter of each sentence should be capitalized.
              */
             INITIAL_CAPS_SENTENCE,
-                
+
             /**
              * Capitalize all characters automatically.
              */
             INITIAL_CAPS_ALL_CHARACTERS,
-            
+
             /**
              * Lowercase all characters automatically.
              */
             LOWERCASE_ALL_CHARACTERS
         };
-            
+
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
@@ -220,7 +236,7 @@ namespace ui {
                                Scale9Sprite* pressedSprite = nullptr,
                                Scale9Sprite* disabledSprite = nullptr);
 
-            
+
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
@@ -228,21 +244,21 @@ namespace ui {
         static EditBox* create(const Size& size,
                                const std::string& normal9SpriteBg,
                                TextureResType texType = TextureResType::LOCAL);
-            
+
         /**
          * Constructor.
          * @js ctor
          * @lua new
          */
         EditBox(void);
-            
+
         /**
          * Destructor.
          * @js NA
          * @lua NA
          */
         virtual ~EditBox(void);
-            
+
         /**
          * Init edit box with specified size. This method should be invoked right after constructor.
          * @param size The size of edit box.
@@ -253,8 +269,7 @@ namespace ui {
         bool initWithSizeAndBackgroundSprite(const Size& size,
                                              const std::string& normal9SpriteBg,
                                              TextureResType texType = TextureResType::LOCAL);
-            
-        
+
         /**
          * Init edit box with specified size. This method should be invoked right after constructor.
          * @param size The size of edit box.
@@ -274,7 +289,7 @@ namespace ui {
          * @lua NA
          */
         EditBoxDelegate* getDelegate();
-            
+
 #if CC_ENABLE_SCRIPT_BINDING
         /**
          * Registers a script function that will be called for EditBox events.
@@ -303,7 +318,7 @@ namespace ui {
          * @lua NA
          */
         void registerScriptEditBoxHandler(int handler);
-            
+
         /**
          * Unregisters a script function that will be called for EditBox events.
          * @js NA
@@ -316,28 +331,28 @@ namespace ui {
          * @lua NA
          */
         int  getScriptEditBoxHandler(void){ return _scriptEditBoxHandler ;}
-            
+
 #endif // #if CC_ENABLE_SCRIPT_BINDING
-            
+
         /**
          * Set the text entered in the edit box.
          * @param pText The given text.
          */
         void setText(const char* pText);
-            
+
         /**
          * Get the text entered in the edit box.
          * @return The text entered in the edit box.
          */
         const char* getText(void) const;
-            
+
         /**
          * Set the font. Only system font is allowed.
          * @param pFontName The font name.
          * @param fontSize The font size.
          */
         void setFont(const char* pFontName, int fontSize);
-            
+
         /**
          * Set the font name. Only system font is allowed.
          * @param pFontName The font name.
@@ -459,7 +474,7 @@ namespace ui {
          * @return Maximum input length.
          */
         int getMaxLength();
-            
+
         /**
          * Set the input flags that are to be applied to the edit box.
          * @param inputFlag One of the EditBox::InputFlag constants.
@@ -540,13 +555,32 @@ namespace ui {
          * @lua NA
          */
         virtual void keyboardDidHide(IMEKeyboardNotificationInfo& info) override;
-            
+
         /* callback functions
          * @js NA
          * @lua NA
          */
         void touchDownAction(Ref *sender, TouchEventType controlEvent);
-            
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxOpenKeyboard)
+        void openKeyboard() const;
+// CROWDSTAR_COCOSPATCH_END
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+        /**
+         * Adds a type of input restriction. For example just accept alpha-numeric keys
+         *
+         * @param inputRestriction Combination of masks to set, use the values set
+         * in the InputRestrictionFlag enum
+         */
+        void setInputRestriction(int inputRestriction);
+        
+        /**
+         * Makes that the first 'uneditableTextLength' characters can't be changed by the user
+         */
+        void setUneditableTextLength(int uneditableTextLength);
+// CROWDSTAR_COCOSPATCH_END
+
     protected:
         virtual void adaptRenderers() override;
 

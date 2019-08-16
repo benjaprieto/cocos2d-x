@@ -26,6 +26,9 @@
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 
 #import "network/HttpAsynConnection-apple.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+#import "mach/mach_time.h"
+// CROWDSTAR_COCOSPATCH_END
 
 @interface HttpAsynConnection ()
 
@@ -47,6 +50,12 @@
 @synthesize conn = conn;
 @synthesize finish = finish;
 @synthesize runLoop = runLoop;
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+@synthesize mach_start1 = mach_start1;
+@synthesize mach_start2 = mach_start2;
+@synthesize mach_time1 = mach_time1;
+@synthesize mach_time2 = mach_time2;
+// CROWDSTAR_COCOSPATCH_END
 
 - (void)dealloc
 {
@@ -69,6 +78,11 @@
 #endif
     
     finish = false;
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    self.mach_start1 = CACurrentMediaTime();
+    self.mach_start2 = 0;
+    // CROWDSTAR_COCOSPATCH_END
 
     self.responseData = [NSMutableData data];
     getDataTime = 0;
@@ -99,6 +113,10 @@
 #ifdef COCOS2D_DEBUG
     NSLog(@"Received response from request to url %@", srcURL);
 #endif
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    self.mach_start2 = CACurrentMediaTime();
+    // CROWDSTAR_COCOSPATCH_END
     
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
     //NSLog(@"All headers = %@", [httpResponse allHeaderFields]);
@@ -151,6 +169,12 @@
     self.connError = error;
     
     finish = true;
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    double current_time = CACurrentMediaTime();
+    self.mach_time1 = (current_time - self.mach_start1) * 1000;
+    self.mach_time2 = (current_time - self.mach_start2) * 1000;
+    // CROWDSTAR_COCOSPATCH_END
 }
 
 /**
@@ -160,6 +184,12 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     finish = true;
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    double current_time = CACurrentMediaTime();
+    self.mach_time1 = (current_time - self.mach_start1) * 1000;
+    self.mach_time2 = (current_time - self.mach_start2) * 1000;
+    // CROWDSTAR_END
 }
 
 //Server evaluates client's certificate

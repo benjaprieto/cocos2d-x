@@ -87,18 +87,27 @@ extern "C"
 
 #include "base/etc1.h"
     
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+#ifndef LINUX
 #if CC_USE_JPEG
 #include "jpeglib.h"
 #endif // CC_USE_JPEG
+#endif
+// CROWDSTAR_COCOSPATCH_END
 }
 #include "base/s3tc.h"
 #include "base/atitc.h"
 #include "base/pvr.h"
 #include "base/TGAlib.h"
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+#ifndef LINUX
 #if CC_USE_WEBP
 #include "decode.h"
+#include "encode.h"
 #endif // CC_USE_WEBP
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
 #include "base/ccMacros.h"
 #include "platform/CCCommon.h"
@@ -489,6 +498,13 @@ Image::Image()
 , _renderFormat(Texture2D::PixelFormat::NONE)
 , _numberOfMipmaps(0)
 , _hasPremultipliedAlpha(false)
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    , _croppedWidth(0)
+    , _croppedHeight(0)
+    , _useAlpha(false)
+    , _benchmark(false)
+// CROWDSTAR_COCOSPATCH_END
 {
 
 }
@@ -504,13 +520,37 @@ Image::~Image()
         CC_SAFE_FREE(_data);
 }
 
-bool Image::initWithImageFile(const std::string& path)
+bool Image::initWithImageFile(const std::string& path
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+                              , bool useAlpha)
+// CROWDSTAR_COCOSPATCH_END
 {
     bool ret = false;
     _filePath = FileUtils::getInstance()->fullPathForFilename(path);
-
+   
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    _useAlpha = useAlpha;
+    
+    if (_benchmark)
+    {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
     Data data = FileUtils::getInstance()->getDataFromFile(_filePath);
-
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark) {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        CCLOG("Image::initWithImageFile - getDataFromFile(%s) Benchmark - Time:%lld (microsecond)", _filePath.c_str(), ms.count());
+        CCLOG("Image::initWithImageFile - getDataFromFile(%s) Benchmark - Time:%lld (milliseconds)", _filePath.c_str(), milli.count());
+        CCLOG("Image::initWithImageFile - getDataFromFile(%s) Benchmark - Time:%lld (seconds)", _filePath.c_str(), seconds.count());
+    }
+// CROWDSTAR_COCOSPATCH_END
     if (!data.isNull())
     {
         ret = initWithImageData(data.getBytes(), data.getSize());
@@ -562,6 +602,13 @@ bool Image::initWithImageData(const unsigned char * data, ssize_t dataLen)
 
         _fileType = detectFormat(unpackedData, unpackedLen);
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+        if (_filePath.find(".webpj") != std::string::npos)
+        {
+            _fileType = Format::WEBP;
+        }
+// CROWDSTAR_COCOSPATCH_END
+        
         switch (_fileType)
         {
         case Format::PNG:
@@ -922,6 +969,13 @@ bool Image::encodeWithWIC(const std::string& filePath, bool isToRGB, GUID contai
 
 bool Image::initWithJpgData(const unsigned char * data, ssize_t dataLen)
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark)
+    {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
 #if CC_USE_WIC
     return decodeWithWIC(data, dataLen);
 #elif CC_USE_JPEG
@@ -1007,6 +1061,20 @@ bool Image::initWithJpgData(const unsigned char * data, ssize_t dataLen)
         /* wrap up decompression, destroy objects, free pointers and close open files */        
         ret = true;
     } while (0);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        CCLOG("Image::initWithJpgData - Decode Benchmark - Time:%lld (microsecond)", ms.count());
+        CCLOG("Image::initWithJpgData - Decode Benchmark - Time:%lld (milliseconds)", milli.count());
+        CCLOG("Image::initWithJpgData - Decode Benchmark - Time:%lld (seconds)", seconds.count());
+    }
+// CROWDSTAR_COCOSPATCH_END
 
     return ret;
 #else
@@ -1017,6 +1085,12 @@ bool Image::initWithJpgData(const unsigned char * data, ssize_t dataLen)
 
 bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark) {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
 #if CC_USE_WIC
     return decodeWithWIC(data, dataLen);
 #elif CC_USE_PNG
@@ -1143,7 +1217,10 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
         png_read_end(png_ptr, nullptr);
 
         // premultiplied alpha for RGBA8888
-        if (PNG_PREMULTIPLIED_ALPHA_ENABLED && color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+// Added condition !useAlpha
+        if (PNG_PREMULTIPLIED_ALPHA_ENABLED && color_type == PNG_COLOR_TYPE_RGB_ALPHA && !_useAlpha  )
+// CROWDSTAR_COCOSPATCH_END
         {
             premultipliedAlpha();
         }
@@ -1160,6 +1237,21 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
     {
         png_destroy_read_struct(&png_ptr, (info_ptr) ? &info_ptr : 0, 0);
     }
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        CCLOG("Image::initWithPngData - Decode Benchmark - Time:%lld (microsecond)", ms.count());
+        CCLOG("Image::initWithPngData - Decode Benchmark - Time:%lld (milliseconds)", milli.count());
+        CCLOG("Image::initWithPngData - Decode Benchmark - Time:%lld (seconds)", seconds.count());
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
     return ret;
 #else
     CCLOG("png is not enabled, please enable it in ccConfig.h");
@@ -2109,6 +2201,23 @@ bool Image::initWithPVRData(const unsigned char * data, ssize_t dataLen)
 
 bool Image::initWithWebpData(const unsigned char * data, ssize_t dataLen)
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark)
+    {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
+    if (_filePath.find("webpj") != std::string::npos)
+    {
+        char *headerStart = (char *) data + 8; //Header should start at ninth byte as Initial
+        if (strncmp(headerStart, "RIFF", 4) == 0) //Compare that header should be RIFF
+        {
+            data = (unsigned char *) data + 8; // Because intial 8 bytes are offset
+            dataLen -= 8; //Remove the eight bytes from the data as those were offsets
+        }
+    }
+    
 #if CC_USE_WEBP
     bool ret = false;
 
@@ -2148,6 +2257,21 @@ bool Image::initWithWebpData(const unsigned char * data, ssize_t dataLen)
         ret = true;
     } while (0);
 #endif // (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        CCLOG("Image::initWithWebpData - Decode Benchmark - Time:%lld (microsecond)", ms.count());
+        CCLOG("Image::initWithWebpData - Decode Benchmark - Time:%lld (milliseconds)", milli.count());
+        CCLOG("Image::initWithWebpData - Decode Benchmark - Time:%lld (seconds)", seconds.count());
+    }
+// CROWDSTAR_COCOSPATCH_END
+    
     return ret;
 #else 
     CCLOG("webp is not enabled, please enable it in ccConfig.h");
@@ -2458,12 +2582,31 @@ void Image::premultipliedAlpha()
 #else
     CCASSERT(_renderFormat == Texture2D::PixelFormat::RGBA8888, "The pixel format should be RGBA8888!");
     
-    unsigned int* fourBytes = (unsigned int*)_data;
-    for(int i = 0; i < _width * _height; i++)
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+// Function optimized by Marting, previous version is commented below
+    unsigned char* p = _data;
+    unsigned char* end = _data + (_width * _height * 4);
+    unsigned int a;
+    do
     {
-        unsigned char* p = _data + i * 4;
-        fourBytes[i] = CC_RGB_PREMULTIPLY_ALPHA(p[0], p[1], p[2], p[3]);
+        a = (p[3] + 1);
+        p[0] = (unsigned char)((p[0] * a) >> 8);
+        p[1] = (unsigned char)((p[1] * a) >> 8);
+        p[2] = (unsigned char)((p[2] * a) >> 8);
+        p += 4;
     }
+    while(p<end);
+
+//    unsigned int* fourBytes = (unsigned int*)_data;
+//    for(int i = 0; i < _width * _height; i++)
+//    do
+//    {
+//        unsigned char* p = _data + i * 4;
+//        fourBytes[i] = CC_RGB_PREMULTIPLY_ALPHA(p[0], p[1], p[2], p[3]);
+//    }
+//    while(p<end);
+    
+// CROWDSTAR_COCOSPATCH_END
     
     _hasPremultipliedAlpha = true;
 #endif
@@ -2474,6 +2617,481 @@ void Image::setPVRImagesHavePremultipliedAlpha(bool haveAlphaPremultiplied)
 {
     _PVRHaveAlphaPremultiplied = haveAlphaPremultiplied;
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ImagesExtensions)
+
+#ifdef LINUX
+std::pair<char *, size_t> Image::getImageData(const std::string &contentType, bool isToRGB)
+{
+    unsigned char *p = _data;
+    unsigned char *end = _data + (_width * _height * 4);
+    unsigned int a;
+    do {
+        a = p[3] + 1;
+        p[0] = static_cast<unsigned char>(p[0] * 256 / a);
+        p[1] = static_cast<unsigned char>(p[1] * 256 / a);
+        p[2] = static_cast<unsigned char>(p[2] * 256 / a);
+        p += 4;
+    } while (p < end);
+    
+    if (contentType == "png")
+    {
+        return getPngData(isToRGB);
+    }
+    else if (contentType == "jpg")
+    {
+        return getJpgData(isToRGB);
+    }
+    else if (contentType == "webp" || contentType == "webpj" || contentType == "webpc")
+    {
+        return getWebpData(contentType, isToRGB);
+    }
+    else
+    {
+        return std::make_pair(nullptr, 0);
+    }
+}
+
+static void pngWriteCallback(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    std::vector<png_byte> *p = (std::vector<png_byte> *) png_get_io_ptr(png_ptr);
+    p->insert(p->end(), data, data + length);
+}
+
+std::pair<char *, size_t> Image::getPngData(bool isToRGB)
+{
+    if (_benchmark)
+    {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+    
+    std::vector<png_byte> buffer;
+    
+    do
+    {
+        png_structp png_ptr;
+        png_infop info_ptr;
+        png_colorp palette;
+        
+        png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+        
+        if (nullptr == png_ptr)
+        {
+            break;
+        }
+        
+        info_ptr = png_create_info_struct(png_ptr);
+        if (nullptr == info_ptr)
+        {
+            png_destroy_write_struct(&png_ptr, nullptr);
+            break;
+        }
+        
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_BADA && CC_TARGET_PLATFORM != CC_PLATFORM_NACL)
+        if (setjmp(png_jmpbuf(png_ptr)))
+        {
+            png_destroy_write_struct(&png_ptr, &info_ptr);
+            break;
+        }
+#endif
+        
+        if (!isToRGB && hasAlpha())
+        {
+            png_set_IHDR(png_ptr, info_ptr, _width, _height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+                         PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+        }
+        else
+        {
+            png_set_IHDR(png_ptr, info_ptr, _width, _height, 8, PNG_COLOR_TYPE_RGB,
+                         PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+        }
+        
+        palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof (png_color));
+        png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+        
+        png_set_packing(png_ptr);
+        
+        std::vector<png_bytep> rows((int)_height);
+        
+        if (!hasAlpha())
+        {
+            for (int i = 0; i < (int)_height; i++)
+            {
+                rows[i] = (png_bytep)_data + i * _width * 3;
+            }
+        }
+        else
+        {
+            if (isToRGB)
+            {
+                unsigned char *tempData = static_cast<unsigned char*>(malloc(_width * _height * 3 * sizeof(unsigned char)));
+                if (nullptr == tempData)
+                {
+                    png_destroy_write_struct(&png_ptr, &info_ptr);
+                    break;
+                }
+                
+                for (int i = 0; i < _height; ++i)
+                {
+                    for (int j = 0; j < _width; ++j)
+                    {
+                        tempData[(i * _width + j) * 3] = _data[(i * _width + j) * 4];
+                        tempData[(i * _width + j) * 3 + 1] = _data[(i * _width + j) * 4 + 1];
+                        tempData[(i * _width + j) * 3 + 2] = _data[(i * _width + j) * 4 + 2];
+                    }
+                }
+                
+                for (int i = 0; i < (int)_height; i++)
+                {
+                    rows[i] = (png_bytep)tempData + i * _width * 3;
+                }
+                
+                if (tempData != nullptr)
+                {
+                    free(tempData);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < (int)_height; i++)
+                {
+                    rows[i] = (png_bytep)_data + i * _width * 4;
+                }
+            }
+        }
+        
+        png_set_rows(png_ptr, info_ptr, &rows[0]);
+        png_set_write_fn(png_ptr, &buffer, pngWriteCallback, nullptr);
+        png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
+        
+        png_free(png_ptr, palette);
+        palette = nullptr;
+        
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+    } while (0);
+    
+    size_t bufferSize = buffer.size();
+    char *bufferCopy = (char *) malloc(bufferSize);
+    memcpy(bufferCopy, reinterpret_cast<const char *>(buffer.data()), bufferSize);
+    
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        printf("Image::getPngData - Encode Benchmark - Time:%lld (microsecond)\n", ms.count());
+        printf("Image::getPngData - Encode Benchmark - Time:%lld (milliseconds)\n", milli.count());
+        printf("Image::getPngData - Encode Benchmark - Time:%lld (seconds)\n", seconds.count());
+    }
+    
+    return std::make_pair(bufferCopy, bufferSize);
+}
+
+#define JPG_BUFFER_SIZE 4096
+
+struct JpgDestinationMgr
+{
+    jpeg_destination_mgr pub;
+    std::vector<unsigned char> buffer;
+};
+
+static void jpgInitDestination(j_compress_ptr cinfo)
+{
+    JpgDestinationMgr *dest = (JpgDestinationMgr *) cinfo->dest;
+    dest->buffer.resize(JPG_BUFFER_SIZE);
+    cinfo->dest->next_output_byte = dest->buffer.data();
+    cinfo->dest->free_in_buffer = dest->buffer.size();
+}
+
+static void jpgTermDestination(j_compress_ptr cinfo)
+{
+    JpgDestinationMgr *dest = (JpgDestinationMgr *) cinfo->dest;
+    dest->buffer.resize(dest->buffer.size() - cinfo->dest->free_in_buffer);
+}
+
+static boolean jpgEmptyOutputBuffer(j_compress_ptr cinfo)
+{
+    JpgDestinationMgr *dest = (JpgDestinationMgr *) cinfo->dest;
+    size_t oldsize = dest->buffer.size();
+    dest->buffer.resize(oldsize + JPG_BUFFER_SIZE);
+    cinfo->dest->next_output_byte = dest->buffer.data() + oldsize;
+    cinfo->dest->free_in_buffer = JPG_BUFFER_SIZE;
+    return TRUE;
+}
+
+static void jpeg_mem_dest(j_compress_ptr cinfo, JpgDestinationMgr *dest)
+{
+    cinfo->dest = (jpeg_destination_mgr *) dest;
+    cinfo->dest->init_destination = jpgInitDestination;
+    cinfo->dest->term_destination = jpgTermDestination;
+    cinfo->dest->empty_output_buffer = jpgEmptyOutputBuffer;
+}
+
+std::pair<char *, size_t> Image::getJpgData(bool isToRGB)
+{
+    if (_benchmark) {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+    
+    struct JpgDestinationMgr dest;
+    
+    do
+    {
+        struct jpeg_compress_struct cinfo;
+        struct jpeg_error_mgr jerr;
+        JSAMPROW row_pointer[1];        /* pointer to JSAMPLE row[s] */
+        int     row_stride;          /* physical row width in image buffer */
+        
+        cinfo.err = jpeg_std_error(&jerr);
+        /* Now we can initialize the JPEG compression object. */
+        jpeg_create_compress(&cinfo);
+        
+        jpeg_mem_dest(&cinfo, &dest);
+        
+        cinfo.image_width = _width;    /* image width and height, in pixels */
+        cinfo.image_height = _height;
+        cinfo.input_components = 3;       /* # of color components per pixel */
+        cinfo.in_color_space = JCS_EXT_RGB;       /* colorspace of input image */
+        cinfo.dct_method = _jpgConfig.dct_method;
+        
+        jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, _jpgConfig.quality, TRUE);
+        
+        jpeg_start_compress(&cinfo, TRUE);
+        
+        row_stride = _width * 3; /* JSAMPLEs per row in image_buffer */
+        
+        if (hasAlpha())
+        {
+            unsigned char *tempData = static_cast<unsigned char*>(malloc(_width * _height * 3 * sizeof(unsigned char)));
+            if (nullptr == tempData)
+            {
+                jpeg_finish_compress(&cinfo);
+                jpeg_destroy_compress(&cinfo);
+                break;
+            }
+            
+            for (int i = 0; i < _height; ++i)
+            {
+                for (int j = 0; j < _width; ++j)
+                {
+                    tempData[(i * _width + j) * 3] = _data[(i * _width + j) * 4];
+                    tempData[(i * _width + j) * 3 + 1] = _data[(i * _width + j) * 4 + 1];
+                    tempData[(i * _width + j) * 3 + 2] = _data[(i * _width + j) * 4 + 2];
+                }
+            }
+            
+            while (cinfo.next_scanline < cinfo.image_height)
+            {
+                row_pointer[0] = & tempData[cinfo.next_scanline * row_stride];
+                (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+            }
+            
+            if (tempData != nullptr)
+            {
+                free(tempData);
+            }
+        }
+        else
+        {
+            while (cinfo.next_scanline < cinfo.image_height)
+            {
+                row_pointer[0] = & _data[cinfo.next_scanline * row_stride];
+                (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+            }
+        }
+        
+        jpeg_finish_compress(&cinfo);
+        jpeg_destroy_compress(&cinfo);
+    } while (0);
+    
+    size_t bufferSize = dest.buffer.size();
+    char *bufferCopy = (char *) malloc(bufferSize);
+    memcpy(bufferCopy, reinterpret_cast<const char *>(dest.buffer.data()), bufferSize);
+    
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        printf("Image::getJpgData - Encode Benchmark - Time:%lld (microsecond)\n", ms.count());
+        printf("Image::getJpgData - Encode Benchmark - Time:%lld (milliseconds)\n", milli.count());
+        printf("Image::getJpgData - Encode Benchmark - Time:%lld (seconds)\n", seconds.count());
+    }
+    
+    return std::make_pair(bufferCopy, bufferSize);
+}
+
+std::pair<char *, size_t> Image::getWebpData(const std::string &contentType, bool isToRGB) {
+    if (_benchmark)
+    {
+        b0 = std::chrono::high_resolution_clock::now();
+    }
+    
+    do {
+        WebPPicture pic;
+        if (!WebPPictureInit(&pic))
+        {
+            break;
+        }
+        
+        pic.width = _width;
+        pic.height = _height;
+        
+        if (!WebPPictureAlloc(&pic))
+        {
+            break;
+        }
+        
+        if (!hasAlpha())
+        {
+            if (!WebPPictureImportRGB(&pic, static_cast<const uint8_t *>(_data), _width * 3))
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (isToRGB)
+            {
+                if (!WebPPictureImportRGBX(&pic, static_cast<const uint8_t *>(_data), _width * 3))
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (!WebPPictureImportRGBA(&pic, static_cast<const uint8_t *>(_data), _width * 4))
+                {
+                    break;
+                }
+            }
+        }
+        
+        WebPMemoryWriter writer;
+        WebPMemoryWriterInit(&writer);
+        
+        pic.writer = WebPMemoryWrite;
+        pic.custom_ptr = &writer;
+        
+        Rect cropRect = Rect(8000, 8000, 0, 0);
+        if (contentType == "webpj" || contentType == "webpc") {
+            int ptr = 0;
+            
+            for (int y = 0; y < _height; y++)
+            {
+                for (int x = 0; x < _width; x++)
+                {
+                    uint8_t *col = (uint8_t *) &_data[ptr += 4];
+                    if (col[3] > 18 && col[3] < 255)
+                    {
+                        if (x < cropRect.origin.x)
+                        {
+                            cropRect.origin.x = x;
+                        }
+                        
+                        if (y < cropRect.origin.y)
+                        {
+                            cropRect.origin.y = y;
+                        }
+                        
+                        if (x > cropRect.size.width)
+                        {
+                            cropRect.size.width = x;
+                        }
+                        
+                        if (y > cropRect.size.height)
+                        {
+                            cropRect.size.height = y;
+                        }
+                    }
+                }
+            }
+            
+            if (cropRect.origin.x > cropRect.size.width)
+            {
+                cropRect.origin.x = cropRect.size.width;
+            }
+            
+            if (cropRect.origin.y > cropRect.size.height)
+            {
+                cropRect.origin.y = cropRect.size.height;
+            }
+            
+            if (!WebPPictureCrop(&pic, cropRect.origin.x, cropRect.origin.y, cropRect.size.width - cropRect.origin.x, cropRect.size.height - cropRect.origin.y))
+            {
+                break;
+            }
+            
+            _croppedWidth = cropRect.size.width;
+            _croppedHeight = cropRect.size.height;
+        }
+        
+        int ok = WebPEncode(&_webpConfig, &pic);
+        WebPPictureFree(&pic);
+        if (!ok) {
+            break;
+        }
+        
+        char *bufferCopy;
+        size_t bufferCopySize = writer.size;
+        if (contentType == "webpj")
+        {
+            uint16_t x = (uint16_t) cropRect.origin.x;
+            uint16_t y = (uint16_t) cropRect.origin.y;
+            uint16_t width = (uint16_t) _width;
+            uint16_t height = (uint16_t) _height;
+            
+            bufferCopySize += 8;
+            bufferCopy = (char *) malloc(bufferCopySize);
+            memcpy(bufferCopy, &x, 2);
+            memcpy(bufferCopy + 2, &y, 2);
+            memcpy(bufferCopy + 4, &width, 2);
+            memcpy(bufferCopy + 6, &height, 2);
+            memcpy(bufferCopy + 8, reinterpret_cast<const char *>(writer.mem), writer.size);
+        }
+        else
+        {
+            bufferCopy = (char *) malloc(bufferCopySize);
+            memcpy(bufferCopy, reinterpret_cast<const char *>(writer.mem), writer.size);
+        }
+        
+        if (_benchmark)
+        {
+            b1 = std::chrono::high_resolution_clock::now();
+            std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+            std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+            std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+            
+            printf("Image::getWebpData - Encode Benchmark - Time:%lld (microsecond)\n", ms.count());
+            printf("Image::getWebpData - Encode Benchmark - Time:%lld (milliseconds)\n", milli.count());
+            printf("Image::getWebpData - Encode Benchmark - Time:%lld (seconds)\n", seconds.count());
+        }
+        
+        return std::make_pair(bufferCopy, bufferCopySize);
+    } while (0); // @todo [GMR.Ben] Review this, while 0, and return???
+    
+    if (_benchmark)
+    {
+        b1 = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(b1 - b0);
+        std::chrono::milliseconds milli = std::chrono::duration_cast<std::chrono::milliseconds>(b1 - b0);
+        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(b1 - b0);
+        
+        printf("Image::getWebpData - Encode Benchmark - Time:%lld (microsecond)\n", ms.count());
+        printf("Image::getWebpData - Encode Benchmark - Time:%lld (milliseconds)\n", milli.count());
+        printf("Image::getWebpData - Encode Benchmark - Time:%lld (seconds)\n", seconds.count());
+    }
+    
+    return std::make_pair(nullptr, 0);
+}
+#endif
+
+// CROWDSTAR_COCOSPATCH_END
 
 NS_CC_END
 

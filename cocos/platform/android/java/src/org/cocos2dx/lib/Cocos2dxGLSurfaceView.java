@@ -173,6 +173,16 @@ public class Cocos2dxGLSurfaceView extends GLSurfaceView {
         }
     }
 
+//  CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+    public String getGLVendor() {
+        return mCocos2dxRenderer.getGLVendor();
+    }
+
+    public String getGLRenderer() {
+        return mCocos2dxRenderer.getGLRenderer();        
+    }
+//  CROWDSTAR_COCOSPATCH_END
+
     // ===========================================================
     // Methods for/from SuperClass/Interfaces
     // ===========================================================

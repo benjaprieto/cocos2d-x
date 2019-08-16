@@ -35,6 +35,9 @@ THE SOFTWARE.
 #include <string>
 #include <unordered_map>
 #include <functional>
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+#include <unordered_set>
+// CROWDSTAR_COCOSPATCH_END
 
 #include "base/CCRef.h"
 #include "renderer/CCTexture2D.h"
@@ -111,7 +114,12 @@ public:
     * Supported image extensions: .png, .bmp, .tiff, .jpeg, .pvr.
      @param filepath A null terminated string.
     */
-    Texture2D* addImage(const std::string &filepath);
+    Texture2D* addImage(const std::string &filepath
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+                        ,bool useAlpha = false, int parentGarmentVersion = -1
+// CROWDSTAR_COCOSPATCH_END
+                        );
+    
 
     /** Returns a Texture2D object given a file image.
     * If the file image was not previously loaded, it will create a new Texture2D object and it will return it.
@@ -122,17 +130,32 @@ public:
      @param callback A callback function would be invoked after the image is loaded.
      @since v0.8
     */
-    virtual void addImageAsync(const std::string &filepath, const std::function<void(Texture2D*)>& callback);
     
-    void addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback, const std::string& callbackKey );
-
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Replaced:
+//
+// virtual void addImageAsync(const std::string &filepath, const std::function<void(Texture2D*)>& callback);
+//
+// void addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback, const std::string& callbackKey );
+//
+    virtual void addImageAsync(const std::string &filepath, const std::function<void(Texture2D*, std::string)>& callback);
+    
+    void addImageAsync(const std::string &path, const std::function<void(Texture2D*, std::string)>& callback, const std::string& callbackKey, Ref* target = nullptr );
+// CROWDSTAR_COCOSPATCH_END
+    
     /** Unbind a specified bound image asynchronous callback.
      * In the case an object who was bound to an image asynchronous callback was destroyed before the callback is invoked,
      * the object always need to unbind this callback manually.
      * @param filename It's the related/absolute path of the file image.
      * @since v3.1
      */
-    virtual void unbindImageAsync(const std::string &filename);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Replaced:
+//
+// virtual void unbindImageAsync(const std::string &filename);
+//
+    virtual void unbindImageAsync(const std::string &filename, Ref* target);
+ // CROWDSTAR_COCOSPATCH_END
     
     /** Unbind all bound image asynchronous load callbacks.
      * @since v3.1
@@ -199,6 +222,11 @@ public:
     /**Called by director, please do not called outside.*/
     void waitForQuit();
 
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+    unsigned int checkCachedTextureInfo();
+    void dumpCachedTextureInfo();
+// CROWDSTAR_COCOSPATCH_END
+
     /**
      * Get the file path of the texture
      *
@@ -223,8 +251,31 @@ private:
     void addImageAsyncCallBack(float dt);
     void loadImage();
     void parseNinePatchImage(Image* image, Texture2D* texture, const std::string& path);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+#ifdef LINUX
+    struct DecodedImageHeader
+    {
+        uint16_t width;
+        uint16_t height;
+        uint32_t version;
+        
+        DecodedImageHeader() : width(0), height(0), version(-1) {}
+    };
+#endif
+// CROWDSTAR_COCOSPATCH_END
+  
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Replaced protected with public
+//
+// @todo [GMR.Ben] Return protected zone, create proper interface for what
+// we need to be public
+//
+// protected:
+//
 public:
-protected:
+// CROWDSTAR_COCOSPATCH_END
+    
     struct AsyncStruct;
     
     std::thread* _loadingThread;
@@ -245,6 +296,11 @@ protected:
     std::unordered_map<std::string, Texture2D*> _textures;
 
     static std::string s_etc1AlphaFileSuffix;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+    std::mutex _limboUnbindMutex;
+    std::unordered_set<std::string> _limboUnbindFiles;
+// CROWDSTAR_COCOSPATCH_END
 };
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA

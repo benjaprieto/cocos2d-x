@@ -60,7 +60,13 @@ SkeletonRenderer* SkeletonRenderer::createWithFile (const std::string& skeletonD
 }
 
 void SkeletonRenderer::initialize () {
-	_worldVertices = new float[1000]; // Max number of vertices per mesh.
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// Was:
+//	_worldVertices = new float[1000]; // Max number of vertices per mesh.
+//
+// Changed to:
+	_worldVertices = new float[4096]; // Max number of vertices per mesh.
+// CROWDSTAR_COCOSPATCH_END
 
 	_blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
 	setOpacityModifyRGB(true);
@@ -73,24 +79,36 @@ void SkeletonRenderer::setSkeletonData (spSkeletonData *skeletonData, bool ownsS
 	_ownsSkeletonData = ownsSkeletonData;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// now also initializing _skeleton to nullptr
 SkeletonRenderer::SkeletonRenderer ()
-	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1) {
+	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1), _skeleton(nullptr) {
 }
+// CROWDSTAR_COCOSPATCH_END
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// now also initializing _skeleton to nullptr
 SkeletonRenderer::SkeletonRenderer (spSkeletonData *skeletonData, bool ownsSkeletonData)
-	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1) {
+	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1), _skeleton(nullptr) {
 	initWithData(skeletonData, ownsSkeletonData);
 }
+// CROWDSTAR_COCOSPATCH_END
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// now also initializing _skeleton to nullptr
 SkeletonRenderer::SkeletonRenderer (const std::string& skeletonDataFile, spAtlas* atlas, float scale)
-	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1) {
+	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1), _skeleton(nullptr) {
 	initWithJsonFile(skeletonDataFile, atlas, scale);
 }
+// CROWDSTAR_COCOSPATCH_END
 
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// now also initializing _skeleton to nullptr
 SkeletonRenderer::SkeletonRenderer (const std::string& skeletonDataFile, const std::string& atlasFile, float scale)
-	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1) {
+	: _atlas(nullptr), _attachmentLoader(nullptr), _debugSlots(false), _debugBones(false), _timeScale(1), _skeleton(nullptr) {
 	initWithJsonFile(skeletonDataFile, atlasFile, scale);
 }
+// CROWDSTAR_COCOSPATCH_END
 
 SkeletonRenderer::~SkeletonRenderer () {
 	if (_ownsSkeletonData) spSkeletonData_dispose(_skeleton->data);
@@ -123,6 +141,15 @@ void SkeletonRenderer::initWithJsonFile (const std::string& skeletonDataFile, sp
 
 void SkeletonRenderer::initWithJsonFile (const std::string& skeletonDataFile, const std::string& atlasFile, float scale) {
 	_atlas = spAtlas_createFromFile(atlasFile.c_str(), 0);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// Patch to log where is the problem. Change already rejected by Cocos
+    if (!_atlas) 
+	{
+        CCLOG("ERROR: atLasFile = %s", atlasFile.c_str());
+    }
+// CROWDSTAR_COCOSPATCH_END(SpineFixes)
+
 	CCASSERT(_atlas, "Error reading atlas file.");
 
 	_attachmentLoader = SUPER(Cocos2dAttachmentLoader_create(_atlas));
@@ -130,6 +157,16 @@ void SkeletonRenderer::initWithJsonFile (const std::string& skeletonDataFile, co
 	spSkeletonJson* json = spSkeletonJson_createWithLoader(_attachmentLoader);
 	json->scale = scale;
 	spSkeletonData* skeletonData = spSkeletonJson_readSkeletonDataFile(json, skeletonDataFile.c_str());
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// Patch to log where is the problem. Change already rejected by Cocos
+    if (!skeletonData) 
+	{
+        CCLOG("ERROR: skeletonDataFile = %s", skeletonDataFile.c_str());
+        
+    }
+// CROWDSTAR_COCOSPATCH_END
+
 	CCASSERT(skeletonData, json->error ? json->error : "Error reading skeleton data file.");
 	spSkeletonJson_dispose(json);
 

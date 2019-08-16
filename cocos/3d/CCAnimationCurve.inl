@@ -46,7 +46,13 @@ void AnimationCurve<componentSize>::evaluate(float time, float* dst, EvaluateTyp
             else
                 Quaternion::slerp(Quaternion(toValue), Quaternion(fromValue), t, &quat);
             
-            dst[0] = quat.x, dst[1] = quat.y, dst[2] = quat.z, dst[3] = quat.w;
+// CROWDSTAR_COCOSPATCH_BEGIN(CCAnimationMinorFormating)
+// Added the plist parameter
+            dst[0] = quat.x;
+            dst[1] = quat.y;
+            dst[2] = quat.z;
+            dst[3] = quat.w;
+// CROWDSTAR_COCOSPATCH_END
         }
         break;
         case EvaluateType::INT_USER_FUNCTION:

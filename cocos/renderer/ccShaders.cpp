@@ -99,4 +99,25 @@ NS_CC_BEGIN
 #include "renderer/ccShader_Position.vert"
 #include "renderer/ccShader_LayerRadialGradient.frag"
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+#include "csShader_TintShader.frag"
+#include "csShader_GreyToColorShader.frag"
+#include "csShader_ColorToGreyShader.frag"
+#include "csShader_RadialGradient.frag"
+#include "csShader_GlowShader.frag"
+#include "csShader_BlurHorizontal.vert"
+#include "csShader_BlurVertical.vert"
+#include "csShader_GreenScreen.frag"
+#include "csShader_GreenScreenDroid.frag"
+#include "csShader_BlurEdgeShader.frag"
+#include "csShader_Mask.frag"
+#include "csShader_Mask4.frag"
+#include "csShader_ForegroundImgMask.frag"
+#include "csShader_CircleMask.frag"
+#include "csShader_PositionTextureA8Color_noMVP.vert"
+#include "csShader_PositionTextureColor_noMVP.vert"
+#include "csShader_Scissor.frag"
+#include "csShader_GlowSampler.frag"
+// CROWDSTAR_COCOSPATCH_END
+
 NS_CC_END

@@ -229,13 +229,24 @@ std::string Console::Utility::_prompt(PROMPT);
 // trim from start
 
 std::string& Console::Utility::ltrim(std::string& s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+// CROWDSTAR_COCOSPATCH_BEGIN(ConsoleChanges)
+// Was:
+//
+//    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+//
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) { return !std::isspace(c);} ));
+// CROWDSTAR_COCOSPATCH_END
     return s;
 }
 
 // trim from end
 std::string& Console::Utility::rtrim(std::string& s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+// CROWDSTAR_COCOSPATCH_BEGIN(ConsoleChanges)
+// Was:
+//    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+//
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int c) { return !std::isspace(c);} ).base(), s.end());
+// CROWDSTAR_COCOSPATCH_END
     return s;
 }
 

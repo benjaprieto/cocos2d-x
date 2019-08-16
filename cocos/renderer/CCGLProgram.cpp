@@ -112,6 +112,27 @@ const char* GLProgram::SHADER_3D_TERRAIN = "Shader3DTerrain";
 const char* GLProgram::SHADER_CAMERA_CLEAR = "ShaderCameraClear";
 const char* GLProgram::SHADER_LAYER_RADIAL_GRADIENT = "ShaderLayerRadialGradient";
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+#ifdef ANDROID
+const char* GLProgram::SHADER_CROWDSTAR_GreenScreenDroid = "GreenScreenDroid";
+#else
+const char* GLProgram::SHADER_CROWDSTAR_GreenScreen = "GreenScreen";
+const char* GLProgram::SHADER_CROWDSTAR_Mask = "Mask";
+#endif
+
+const char* GLProgram::SHADER_CROWDSTAR_BlurEdge = "BlurEdgeShader";
+const char* GLProgram::SHADER_CROWDSTAR_MaskiPhone4 = "MaskiPhone4";
+const char* GLProgram::SHADER_CROWDSTAR_GreyToColorShader = "GreyToColorShader";
+const char* GLProgram::SHADER_CROWDSTAR_ColorToGreyShader = "ColorToGreyShader";
+const char* GLProgram::SHADER_CROWDSTAR_ForegroundImgMaskShader = "ForegroundImgMask";
+const char* GLProgram::SHADER_CROWDSTAR_CircleMaskShader = "CircleMask";
+const char* GLProgram::SHADER_CROWDSTAR_TintShader = "TintShader";
+const char* GLProgram::SHADER_CROWDSTAR_RadShader = "radShader";
+const char* GLProgram::SHADER_CROWDSTAR_GlowVertShader = "GlowVertShader";
+const char* GLProgram::SHADER_CROWDSTAR_GlowHorizShader = "GlowHorizShader";
+const char* GLProgram::SHADER_CROWDSTAR_ScissorShader = "ScissorShader";
+const char* GLProgram::SHADER_CROWDSTAR_GlowSampler = "GlowSampler";
+// CROWDSTAR_COCOSPATCH_END
 
 // uniform names
 const char* GLProgram::UNIFORM_NAME_AMBIENT_COLOR = "CC_AmbientColor";

@@ -105,6 +105,11 @@ public:
     virtual void openKeyboard();
     virtual void closeKeyboard();
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    virtual void setNativeInputRestriction(int inputRestriction) override;
+    virtual void setNativeUneditableTextLength(int uneditableTextLength) override;
+// CROWDSTAR_COCOSPATCH_END
+
 private:
     Label* _label;
     Label* _labelPlaceHolder;

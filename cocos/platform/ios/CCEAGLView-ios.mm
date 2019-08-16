@@ -75,6 +75,10 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #import "platform/ios/CCES2Renderer-ios.h"
 #import "platform/ios/OpenGL_Internal-ios.h"
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+#import "../../../../proj.ios_mac/ios/CustomTextView.h"
+// CROWDSTAR_COCOSPATCH_END
+
 //CLASS IMPLEMENTATIONS:
 
 #define IOS_MAX_TOUCHES_COUNT     10
@@ -387,8 +391,16 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     
     for(UIView* view in subviews)
     {
-        if([view isKindOfClass:NSClassFromString(@"UITextView")] ||
-           [view isKindOfClass:NSClassFromString(@"UITextField")])
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Replaced:
+//        if([view isKindOfClass:NSClassFromString(@"UITextView")] ||
+//           [view isKindOfClass:NSClassFromString(@"UITextField")])
+//
+        const BOOL isSingleLine = [view isKindOfClass:NSClassFromString(@"CCUISingleLineTextField")];
+        const BOOL isUITextView = [view isKindOfClass:NSClassFromString(@"UITextView")];
+        
+        if(isSingleLine || (isUITextView && view.tag == CustomTextViewType_AllowGLTouch))
+// CROWDSTAR_COCOSPATCH_END
         {
             if ([view isFirstResponder])
             {

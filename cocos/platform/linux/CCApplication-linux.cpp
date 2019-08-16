@@ -49,7 +49,12 @@ static long getCurrentMillSecond() {
 }
 
 Application::Application()
-: _animationInterval(1.0f/60.0f*1000.0f)
+: _animationInterval(1.0f/6.0f*1000.0f)
+// CROWDSTAR_COCOSPATCH_BEGIN(LinuxMainLoopExtensions)
+#ifdef LINUX
+, _isMainLoopRunning(false)
+#endif
+// CROWDSTAR_COCOSPATCH_END
 {
     CC_ASSERT(! sm_pSharedApplication);
     sm_pSharedApplication = this;
@@ -61,6 +66,9 @@ Application::~Application()
     sm_pSharedApplication = nullptr;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(LinuxMainLoopExtensions)
+// Runnin method is separated into run and startmainloop
+// end and stop loop
 int Application::run()
 {
     initGLContextAttrs();
@@ -70,42 +78,66 @@ int Application::run()
         return 0;
     }
 
+    auto glview = Director::getInstance()->getOpenGLView();
+    glview->retain();
+    
+    return EXIT_SUCCESS;
+}    
+
+void Application::startMainLoop(std::function<void()> callback) 
+{
+	if (_isMainLoopRunning) {
+		return;
+	}
+	
+	_isMainLoopRunning = true;
+	bool didExecuteCallback = false;
+	
     long lastTime = 0L;
     long curTime = 0L;
 
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
-
-    // Retain glview to avoid glview being released in the while loop
-    glview->retain();
-
-    while (!glview->windowShouldClose())
-    {
+	
+	while (_isMainLoopRunning) {
         lastTime = getCurrentMillSecond();
 
         director->mainLoop();
         glview->pollEvents();
 
         curTime = getCurrentMillSecond();
-        if (curTime - lastTime < _animationInterval)
-        {
-            usleep((_animationInterval - curTime + lastTime)*1000);
+        if (curTime - lastTime < _animationInterval) {
+            usleep((_animationInterval - curTime + lastTime) * 1000);
+        }
+        
+        if (!didExecuteCallback && callback) {
+        	didExecuteCallback = true;
+        	callback();
         }
     }
-    /* Only work on Desktop
-    *  Director::mainLoop is really one frame logic
-    *  when we want to close the window, we should call Director::end();
-    *  then call Director::mainLoop to do release of internal resources
-    */
-    if (glview->isOpenGLReady())
-    {
-        director->end();
-        director->mainLoop();
-        director = nullptr;
-    }
-    glview->release();
-    return EXIT_SUCCESS;
 }
+
+void Application::stopMainLoop() 
+{
+	_isMainLoopRunning = false;
+}
+
+void Application::end() 
+{
+    auto director = Director::getInstance();
+    
+    if (auto glview = director->getOpenGLView()) {
+    	if (glview->isOpenGLReady()) {
+			director->end();
+			director->mainLoop();
+			director = nullptr;
+        }
+        
+    	glview->release();
+    }
+}
+
+// CROWDSTAR_COCOSPATCH_END
 
 void Application::setAnimationInterval(float interval)
 {

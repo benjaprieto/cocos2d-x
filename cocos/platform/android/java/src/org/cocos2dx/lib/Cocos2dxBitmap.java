@@ -33,13 +33,30 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.BoringLayout;
 import android.text.Layout;
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+import android.text.SpannableString;
+// CROWDSTAR_COCOSPATCH_END
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+import android.text.style.StrikethroughSpan;
+// CROWDSTAR_COCOSPATCH_END
 import android.util.Log;
-
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+import android.text.style.ForegroundColorSpan;
+import android.text.*;
+import android.graphics.Color;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.TypefaceSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
+// CROWDSTAR_COCOSPATCH_END
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+import java.util.ArrayList;
+// CROWDSTAR_COCOSPATCH_END
 
 public final class Cocos2dxBitmap {
     // ===========================================================
@@ -53,6 +70,10 @@ public final class Cocos2dxBitmap {
     private static final int VERTICAL_ALIGN_TOP = 1;
     private static final int VERTICAL_ALIGN_BOTTOM = 2;
     private static final int VERTICAL_ALIGN_CENTER = 3;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+    private static ArrayList tags = new ArrayList();
+// CROWDSTAR_COCOSPATCH_END
 
     // ===========================================================
     // Fields
@@ -182,6 +203,139 @@ public final class Cocos2dxBitmap {
             maxWidth = (int)Math.ceil( StaticLayout.getDesiredWidth(string, paint));
         }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+        if(tags.isEmpty())
+        {
+            tags.add("<red_1>");
+            tags.add("<strike_1>");
+            tags.add("<green_1>");
+            tags.add("<blue_1>");
+            tags.add("<gray_1>");
+            tags.add("<bold>");
+            tags.add("<BOLD>");
+            tags.add("<gold_1>");
+            tags.add("<blue_1>");
+            tags.add("<black_1>");
+            tags.add("<white_1>");
+            tags.add("<underline>");
+        }
+
+        ArrayList startIndex = new ArrayList();
+        ArrayList rangeIndex = new ArrayList();
+        ArrayList tagList = new ArrayList();
+
+        String endTag = "</>";
+        int prevIndex = 0;
+        boolean search = true;
+        boolean hasTag = false;
+        int totalTagLength = 0;
+        while(search)
+        {
+            int tagLength = 0;
+            int tagStart = -1;
+            int tagEnd = -1;
+            String tag = "";
+            for (int j = 0 ; j < tags.size(); j++)
+            {
+                String newTag = (String)tags.get(j);
+                int newTagStart = string.indexOf(newTag, prevIndex);
+                int newTagEnd = string.indexOf(endTag, prevIndex);
+
+                if(newTagStart == -1 || newTagEnd == -1)
+                {
+                    continue;
+                }
+
+                if( newTagStart < tagStart || tagStart == -1)
+                {
+                    tagStart = newTagStart;
+                    tag = newTag;
+                    tagEnd = newTagEnd;
+                }
+            }
+
+            if(tagStart == -1 || tagEnd == -1 )
+            {
+                search = false;
+            }
+            else
+            {
+                tagStart -= totalTagLength;
+                tagEnd -= totalTagLength;
+                tagLength = tag.length();
+                totalTagLength += tagLength + endTag.length();
+                startIndex.add(tagStart);
+                rangeIndex.add(tagEnd - (tagStart + tagLength));
+                tagList.add(tag);
+                hasTag = true;
+                prevIndex += tagEnd + 1;
+            }
+        }
+
+        String newString = string;
+
+        if(hasTag)
+        {
+            for (int i = 0 ; i < tagList.size(); i++)
+            {
+                String tag = (String)tagList.get(i);
+                newString = newString.replaceFirst(tag, "");
+                newString = newString.replaceFirst("</>", "");
+            }
+        }
+
+        SpannableString attribString = new SpannableString(newString);
+
+        for (int i = 0 ; i < startIndex.size(); i++)
+        {
+            String tag = (String)tagList.get(i);
+
+            int tagStart = (int) startIndex.get(i);
+            int tagEnd = tagStart + (int) rangeIndex.get(i);
+
+            if(tagEnd > attribString.length())
+                continue;
+
+            if(tag == "<red_1>") {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(216, 45, 60)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<strike_1>"))
+            {
+                attribString.setSpan(new ForegroundColorSpan(Color.GRAY), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                attribString.setSpan(new StrikethroughSpan(), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<green_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(79,186,106)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<blue_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(58,155,252)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<gray_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.GRAY), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<bold>")) {
+                TypefaceSpan typefaceSpan = new TypefaceSpan("Covet-Bold.ttf");
+                attribString.setSpan(new StyleSpan(Typeface.BOLD), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                attribString.setSpan(typefaceSpan, tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<gold_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(203,170,67)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<blue_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(58,155,252)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<black_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.BLACK), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<white_1>")) {
+                attribString.setSpan(new ForegroundColorSpan(Color.rgb(256,256,256)), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else if(tag.equalsIgnoreCase("<underline>")) {
+                attribString.setSpan(new UnderlineSpan(), tagStart, tagEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+// CROWDSTAR_COCOSPATCH_END
+
         Layout layout = null;
         int layoutWidth = 0;
         int layoutHeight = 0;
@@ -189,12 +343,18 @@ public final class Cocos2dxBitmap {
 
         if (overflow == 1 && !enableWrap){
             int widthBoundary = (int)Math.ceil( StaticLayout.getDesiredWidth(string, paint));
-            layout = new StaticLayout(string, paint, widthBoundary , hAlignment,1.0f,0.0f,false);
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+// Changed string to attribString
+            layout = new StaticLayout(attribString, paint, widthBoundary , hAlignment,1.0f,0.0f,false);
+// CROWDSTAR_COCOSPATCH_END
         }else {
             if (overflow == 2) {
                 calculateShrinkTypeFace(string, width, height, hAlignment, fontSize, paint, enableWrap);
             }
-            layout = new StaticLayout(string, paint, maxWidth , hAlignment,1.0f,0.0f,false);
+// CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
+// Changed string to attribString
+            layout = new StaticLayout(attribString, paint, maxWidth , hAlignment,1.0f,0.0f,false);
+// CROWDSTAR_COCOSPATCH_END
         }
 
         layoutWidth = layout.getWidth();

@@ -237,9 +237,17 @@ static int processTask(HttpClient* client, HttpRequest* request, NSString* reque
     {
         NSString* errorString = [httpAsynConn.responseError localizedDescription];
         strcpy(errorBuffer, [errorString UTF8String]);
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpClientJustLogErrorsInApple)
+// @todo [GMR.Ben] Document why we need this change
+        return 0;
+// CROWDSTAR_COCOSPATCH_END
     }
     
     *responseCode = httpAsynConn.responseCode;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    client->setLatencyValues( httpAsynConn.mach_time1, httpAsynConn.mach_time2);
+// CROWDSTAR_COCOSPATCH_END
     
     //add cookie to cookies vector
     if(!cookieFilename.empty())
@@ -370,6 +378,10 @@ HttpClient::HttpClient()
 , _threadCount(0)
 , _cookie(nullptr)
 , _requestSentinel(new HttpRequest())
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+, _clearRequestPredicate(nullptr)
+, _clearResponsePredicate(nullptr)
+// CROWDSTAR_COCOSPATCH_END
 {
     CCLOG("In the constructor of HttpClient!");
     memset(_responseMessage, 0, sizeof(char) * RESPONSE_BUFFER_SIZE);
@@ -522,7 +534,12 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
 
     // write data to HttpResponse
     response->setResponseCode(responseCode);
-
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    response->setLatencyClient(_latency_client);
+    response->setLatencyServer(_latency_server);
+ // CROWDSTAR_COCOSPATCH_END
+    
     if (retValue != 0)
     {
         response->setSucceed(true);
@@ -534,6 +551,40 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
     }
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)   
+void HttpClient::clearResponseAndRequestQueue()
+{
+    _requestQueueMutex.lock();
+    if (_requestQueue.size())
+    {
+        for (auto it = _requestQueue.begin(); it != _requestQueue.end();)
+        {
+            if(!_clearRequestPredicate ||
+               _clearRequestPredicate((*it)))
+            {
+                (*it)->release();
+                it =_requestQueue.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+    _requestQueueMutex.unlock();
+    
+    _responseQueueMutex.lock();
+    if (_clearResponsePredicate)
+    {
+        _responseQueue.erase(std::remove_if(_responseQueue.begin(), _responseQueue.end(), _clearResponsePredicate), _responseQueue.end());
+    }
+    else
+    {
+        _responseQueue.clear();
+    }
+    _responseQueueMutex.unlock();
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void HttpClient::increaseThreadCount()
 {

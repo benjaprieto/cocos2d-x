@@ -199,6 +199,14 @@ private:
     bool _shouldRestoreTableOffset;
     cocos2d::Vec2 _tableOffset;
     friend class TestController;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_LABEL_DEBUG_DRAW
+    cocos2d::MenuItemLabel* _toggleDebugDrawItem;
+#endif
+// CROWDSTAR_COCOSPATCH_END
 };
 
 

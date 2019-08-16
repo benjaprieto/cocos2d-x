@@ -92,13 +92,23 @@ public class Cocos2dxEditBoxHelper {
                 editBox.setInputMode(6); //kEditBoxInputModeSingleLine
                 editBox.setReturnType(0);  //kKeyboardReturnTypeDefault
                 editBox.setHintTextColor(Color.GRAY);
-                //http://stackoverflow.com/questions/11236336/setvisibilityview-visible-doesnt-always-work-ideas
-                editBox.setVisibility(View.GONE);
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo [Alec Copilau] try with View.GONE
+// Commented:
+//
+//                http://stackoverflow.com/questions/11236336/setvisibilityview-visible-doesnt-always-work-ideas
+//                editBox.setVisibility(View.INVISIBLE); // CROWDSTAR - try with View.GONE
+//
+// CROWDSTAR_COCOSPATCH_END
                 editBox.setBackgroundColor(Color.TRANSPARENT);
                 editBox.setTextColor(Color.WHITE);
                 editBox.setSingleLine();
                 editBox.setOpenGLViewScaleX(scaleX);
                 editBox.setPadding(getPadding(scaleX), 0, 0, 0);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+                editBox.setGravity(Gravity.TOP | Gravity.LEFT);
+// CROWDSTAR_COCOSPATCH_END
 
 
                 FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(
@@ -109,8 +119,13 @@ public class Cocos2dxEditBoxHelper {
                 lParams.topMargin = top;
                 lParams.width = width;
                 lParams.height = height;
-                lParams.gravity = Gravity.TOP | Gravity.LEFT;
-
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo [GMR.Ben] Document Why!
+// Commented:
+//
+//                lParams.gravity = Gravity.TOP | Gravity.LEFT; // CROWDSTAR
+//
+// CROWDSTAR_COCOSPATCH_END
                 mFrameLayout.addView(editBox, lParams);
                 editBox.setTag(false);
                 editBox.addTextChangedListener(new TextWatcher() {
@@ -163,7 +178,16 @@ public class Cocos2dxEditBoxHelper {
                             mCocos2dxActivity.getGLSurfaceView().setSoftKeyboardShown(true);
                             Log.d(TAG, "edit box get focus");
                         } else {
-                            editBox.setVisibility(View.GONE);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Commented:
+//
+//                    editBox.setVisibility(View.GONE);
+//
+// ADDED: ??
+                            Log.d("sd","champa 2");
+// CROWDSTAR_COCOSPATCH_END
+                            
                             // Note that we must to copy a string to prevent string content is modified
                             // on UI thread while 's.toString' is invoked at the same time.
                             final String text = new String(editBox.getText().toString());
@@ -200,14 +224,36 @@ public class Cocos2dxEditBoxHelper {
                 editBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                            editBox.endAction = Cocos2dxEditBox.kEndActionNext;
-                            Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
-                            return true;
-                        } else if (actionId == EditorInfo.IME_ACTION_DONE) {
-                            Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Replaced:
+//                    if (actionId == EditorInfo.IME_ACTION_NEXT) {
+//                        editBox.endAction = Cocos2dxEditBox.kEndActionNext;
+//                        Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
+//                        return true;
+//                    } else if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO) {
+//                        editBox.endAction = Cocos2dxEditBox.kEndActionReturn;
+//                        Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
+//                    }
+//return false;
+//
+// With:
+//
+                        switch (actionId) {
+							case EditorInfo.IME_ACTION_NEXT:
+								editBox.endAction = Cocos2dxEditBox.kEndActionNext;
+                            	Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
+                            	return true;
+                            case EditorInfo.IME_ACTION_DONE:
+                            case EditorInfo.IME_ACTION_SEND:
+                            case EditorInfo.IME_ACTION_SEARCH:
+                            case EditorInfo.IME_ACTION_GO:
+								Cocos2dxEditBoxHelper.closeKeyboardOnUiThread(index);
+                                return true;
+                            case EditorInfo.IME_ACTION_NONE:
+                            default:
+                                return false;
                         }
-                        return false;
+ // CROWDSTAR_COCOSPATCH_END
                     }
                 });
 
@@ -320,7 +366,10 @@ public class Cocos2dxEditBoxHelper {
             public void run() {
                 Cocos2dxEditBox editBox = mEditBoxArray.get(index);
                 if (editBox != null) {
-                    editBox.setVisibility(visible ? View.VISIBLE : View.GONE);
+// CROWDSTAR_COCOSPATCH_BEGIN(CommentedSetVisibleHack) 
+// Commented:                  
+//                    editBox.setVisibility(visible ? View.VISIBLE : View.GONE);
+// CROWDSTAR_COCOSPATCH_END
                 }
             }
         });
@@ -335,7 +384,16 @@ public class Cocos2dxEditBoxHelper {
                 if (editBox != null) {
                     editBox.setChangedTextProgrammatically(true);
                     editBox.setText(text);
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo [GMR.Ben] Document Why!
+// Replaced:
+//  
+//                    int position = editBox.getText().length();
+//
+// With:
                     int position = text.length();
+// CROWDSTAR_COCOSPATCH_END
+
                     editBox.setSelection(position);
                 }
             }
@@ -390,6 +448,31 @@ public class Cocos2dxEditBoxHelper {
         });
     }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    public static void setInputRestriction(final int index, final int inputRestriction) {
+        mCocos2dxActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Cocos2dxEditBox editBox = mEditBoxArray.get(index);
+                if (editBox != null) {
+                    editBox.setInputRestriction(inputRestriction);
+                }
+            }
+        });
+    }
+
+    public static void setUneditableTextLength(final int index, final int uneditableTextLength) {
+        mCocos2dxActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Cocos2dxEditBox editBox = mEditBoxArray.get(index);
+                if (editBox != null) {
+                    editBox.setUneditableTextLength(uneditableTextLength);
+                }
+            }
+        });
+    }
+// CROWDSTAR_COCOSPATCH_END
 
     public static void setEditBoxViewRect(final int index, final int left, final int top, final int maxWidth, final int maxHeight) {
         mCocos2dxActivity.runOnUiThread(new Runnable() {

@@ -65,6 +65,10 @@ public class Cocos2dxVideoHelper {
     private final static int VideoTaskRestart = 10;
     private final static int VideoTaskKeepRatio = 11;
     private final static int VideoTaskFullScreen = 12;
+    // CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+    private final static int VideoTaskSetLooping = 13;
+    private final static int VideoTaskSetUserInputEnabled = 14;
+    // CROWDSTAR_COCOSPATCH_END
     final static int KeyEventBack = 1000;
     
     static class VideoHandler extends Handler{
@@ -156,6 +160,20 @@ public class Cocos2dxVideoHelper {
                 }
                 break;
             }
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+            case VideoTaskSetLooping: {
+                Cocos2dxVideoHelper helper = mReference.get();
+                helper._setLooping(msg.arg1, msg.arg2 != 0);
+                break;
+            }
+
+            case VideoTaskSetUserInputEnabled: {
+                Cocos2dxVideoHelper helper = mReference.get();
+                helper._setUserInputEnabled(msg.arg1, msg.arg2 != 0);
+                break;
+            }
+// CROWDSTAR_COCOSPATCH_END
+            
             case KeyEventBack: {
                 Cocos2dxVideoHelper helper = mReference.get();
                 helper.onBackKeyEvent();
@@ -256,6 +274,38 @@ public class Cocos2dxVideoHelper {
             }
         }
     }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+    public static void setLooping(int index, boolean looping) {
+        Message msg = new Message();
+        msg.what = VideoTaskSetLooping;
+        msg.arg1 = index;
+        msg.arg2 = looping ? 1 : 0;
+        mVideoHandler.sendMessage(msg);
+    }
+
+    private void _setLooping(int index, boolean looping) {
+        Cocos2dxVideoView videoView = sVideoViews.get(index);
+        if (videoView != null) {
+            videoView.setLooping(looping);
+        }
+    }
+
+    public static void setUserInputEnabled(int index, boolean enableInput) {
+        Message msg = new Message();
+        msg.what = VideoTaskSetUserInputEnabled;
+        msg.arg1 = index;
+        msg.arg2 = enableInput ? 1 : 0;
+        mVideoHandler.sendMessage(msg);
+    }
+
+    private void _setUserInputEnabled(int index, boolean enableInput) {
+        Cocos2dxVideoView videoView = sVideoViews.get(index);
+        if (videoView != null) {
+            videoView.setUserInputEnabled(enableInput);
+        }
+    }
+// CROWDSTAR_COCOSPATCH_END
     
     public static void setVideoRect(int index, int left, int top, int maxWidth, int maxHeight) {
         Message msg = new Message();

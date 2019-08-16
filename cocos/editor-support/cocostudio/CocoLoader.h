@@ -26,7 +26,13 @@
 #define _COCOLOADER_H
 
 #include <stdint.h>
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+// was
+//
+// #include "json/document-wrapper.h"
+//
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "editor-support/cocostudio/CocosStudioExport.h"
 
 #pragma pack (4)

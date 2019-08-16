@@ -99,6 +99,27 @@ extern CC_DLL const GLchar* ccETC1ASPositionTextureGray_frag;
 extern CC_DLL const GLchar* ccPosition_vert;
 extern CC_DLL const GLchar* ccShader_LayerRadialGradient_frag;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+extern CC_DLL const GLchar * csTint_frag;
+extern CC_DLL const GLchar * csGreyToColor_frag;
+extern CC_DLL const GLchar * csColorToGrey_frag;
+extern CC_DLL const GLchar * csRadialGradient_frag;
+extern CC_DLL const GLchar * csGlow_frag;
+extern CC_DLL const GLchar * csBlurHorizontal_vert;
+extern CC_DLL const GLchar * csBlurVertical_vert;
+extern CC_DLL const GLchar * csGreenScreen_frag;
+extern CC_DLL const GLchar * csGreenScreenDroid_frag;
+extern CC_DLL const GLchar * csBlurEdge_frag;
+extern CC_DLL const GLchar * csMask_frag;
+extern CC_DLL const GLchar * csMask4_frag;
+extern CC_DLL const GLchar * csForegroundImgMask_frag;
+extern CC_DLL const GLchar * csCircleMask_frag;
+extern CC_DLL const GLchar * csPositionTextureA8Color_no_MVP_vert;
+extern CC_DLL const GLchar * csPositionTextureColor_vert;
+extern CC_DLL const GLchar * csScissor_frag;
+extern CC_DLL const GLchar * csGlowSampler_frag;
+// CROWDSTAR_COCOSPATCH_END
+
 NS_CC_END
 /**
  end of support group

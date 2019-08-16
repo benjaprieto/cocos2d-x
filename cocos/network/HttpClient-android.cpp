@@ -39,6 +39,10 @@
 #include "platform/android/jni/JniHelper.h"
 
 #include "base/ccUTF8.h"
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+#include "base/ccUtils.h"
+// CROWDSTAR_COCOSPATCH_END
  
 NS_CC_BEGIN
 
@@ -91,6 +95,12 @@ public:
     ,_responseCookies("")
     ,_cookieFileName("")
     ,_contentLength(0)
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    ,_latency_client(0)
+    ,_latency_server(0)
+    ,_requestStartTime1(0)
+    ,_requestStartTime2(0)
+// CROWDSTAR_COCOSPATCH_END
     {
 
     }
@@ -395,6 +405,15 @@ public:
     {
         return _contentLength;
     }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    void calculateLatency()
+    {
+        auto current_time = cocos2d::utils::gettime();
+        _latency_client = (current_time - _requestStartTime1) * 1000;
+        _latency_server = (current_time - _requestStartTime2) * 1000;
+    }
+// CROWDSTAR_COCOSPATCH_END
     
 private:
     void createHttpURLConnection(const std::string& url)
@@ -610,6 +629,14 @@ private:
     std::string _cookieFileName;
     std::string _url;
     int _contentLength;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+public:
+    long _latency_client;
+    long _latency_server;
+    double _requestStartTime1;
+    double _requestStartTime2;
+// CROWDSTAR_COCOSPATCH_END
 };
 
 // Process Response
@@ -659,13 +686,27 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
             break;
     }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    urlConnection._requestStartTime1 = cocos2d::utils::gettime();
+// CROWDSTAR_COCOSPATCH_END
+
     int suc = urlConnection.connect();
     if (0 != suc)
     {
         response->setSucceed(false);
         response->setErrorBuffer("connect failed");
         response->setResponseCode(responseCode);
-        return;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+// Was:
+//
+//      return;
+//
+// Replaced with:
+        urlConnection.calculateLatency();
+        this->_latency_client = urlConnection._latency_client;
+        this->_latency_server = urlConnection._latency_server;
+// CROWDSTAR_COCOSPATCH_END
     }
 
     if (HttpRequest::Type::POST == requestType ||
@@ -701,6 +742,11 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
 
     //content len
     int contentLength = urlConnection.getResponseHeaderByKeyInt("Content-Length");
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    urlConnection._requestStartTime2 = cocos2d::utils::gettime();
+// CROWDSTAR_COCOSPATCH_END
+
     char* contentInfo = urlConnection.getResponseContent(response);
     if (nullptr != contentInfo) 
     {
@@ -721,6 +767,14 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
 
     // write data to HttpResponse
     response->setResponseCode(responseCode);
+
+ // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    urlConnection.calculateLatency();
+    this->_latency_client = urlConnection._latency_client;
+    this->_latency_server = urlConnection._latency_server;
+    response->setLatencyClient(this->_latency_client);
+    response->setLatencyServer(this->_latency_server);
+// CROWDSTAR_COCOSPATCH_END
 
     if (responseCode == -1)
     {
@@ -884,6 +938,10 @@ HttpClient::HttpClient()
 , _threadCount(0)
 , _cookie(nullptr)
 , _requestSentinel(new HttpRequest())
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+, _clearRequestPredicate(nullptr)
+, _clearResponsePredicate(nullptr)
+// CROWDSTAR_COCOSPATCH_END
 {
     CCLOG("In the constructor of HttpClient!");
     increaseThreadCount();
@@ -989,6 +1047,41 @@ void HttpClient::dispatchResponseCallbacks()
         request->release();
     }
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+void HttpClient::clearResponseAndRequestQueue()
+{
+    _requestQueueMutex.lock();
+    if (_requestQueue.size())
+    {
+        for (auto it = _requestQueue.begin(); it != _requestQueue.end();)
+        {
+            if(!_clearRequestPredicate ||
+               _clearRequestPredicate((*it)))
+            {
+                (*it)->release();
+                it =_requestQueue.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+    _requestQueueMutex.unlock();
+    
+    _responseQueueMutex.lock();
+    if (_clearResponsePredicate)
+    {
+        _responseQueue.erase(std::remove_if(_responseQueue.begin(), _responseQueue.end(), _clearResponsePredicate), _responseQueue.end());
+    }
+    else
+    {
+        _responseQueue.clear();
+    }
+    _responseQueueMutex.unlock();
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void HttpClient::increaseThreadCount()
 {

@@ -17,6 +17,9 @@ EventDispatcherTests::EventDispatcherTests()
     ADD_TEST_CASE(FixedPriorityTest);
     ADD_TEST_CASE(RemoveListenerWhenDispatching);
     ADD_TEST_CASE(CustomEventTest);
+// CROWDSTAR_COCOSPATCH_BEGIN(DispatchEventCustomType)
+    ADD_TEST_CASE(CustomEventOrderTest);
+// CROWDSTAR_COCOSPATCH_END
     ADD_TEST_CASE(LabelKeyboardEventTest);
     ADD_TEST_CASE(SpriteAccelerationEventTest);
     ADD_TEST_CASE(RemoveAndRetainNodeTest);
@@ -433,6 +436,95 @@ std::string CustomEventTest::subtitle() const
 {
     return "";
 }
+
+
+// CROWDSTAR_COCOSPATCH_BEGIN(DispatchEventCustomType)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19262/
+// CustomEventOrderTest
+void CustomEventOrderTest::onBeforeDraw(cocos2d::EventCustom* event)
+{
+    if (!_beforeDraw2 )
+    {
+        _beforeDraw2 = Director::getInstance()->getEventDispatcher()->addCustomEventListener(Director::EVENT_BEFORE_DRAW,
+                                                                                       std::bind(&CustomEventOrderTest::onBeforeDraw2, this, std::placeholders::_1));
+    }
+    _testText = "O";
+}
+
+void CustomEventOrderTest::onBeforeDraw2(cocos2d::EventCustom* event)
+{
+    _testText += "K";
+}
+
+void CustomEventOrderTest::onAfterDraw(cocos2d::EventCustom* event)
+{
+    if (!_beforeDraw)
+    {
+        _beforeDraw = Director::getInstance()->getEventDispatcher()->addCustomEventListener(Director::EVENT_BEFORE_DRAW,
+                                    std::bind(&CustomEventOrderTest::onBeforeDraw, this, std::placeholders::_1));
+    }
+    else
+    {
+        _testText += "!";
+        if (_monitorLabel)
+        {
+            _monitorLabel->setString(_testText);
+        }
+        CCASSERT(_testText == "OK!", "Result test PASSED!");
+    }
+}
+
+std::string CustomEventOrderTest::getExpectedOutput() const
+{
+    return "OK!";
+}
+
+std::string CustomEventOrderTest::getActualOutput() const
+{
+    return _testText;
+}
+
+void CustomEventOrderTest::onEnter()
+{
+    _beforeDraw = nullptr;
+    _beforeDraw2 = nullptr;
+    _testText = "";
+
+     Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    Size size = Director::getInstance()->getVisibleSize();
+
+     EventDispatcherTestDemo::onEnter();
+
+     // Register the afterDraw event, as we are inside a draw step, the beforeDraw will be called next
+    _afterDraw = Director::getInstance()->getEventDispatcher()->addCustomEventListener(  Director::EVENT_AFTER_DRAW,
+                                std::bind(&CustomEventOrderTest::onAfterDraw, this, std::placeholders::_1));
+
+     MenuItemFont::setFontSize(20);
+
+     _monitorLabel= Label::createWithSystemFont("OK!", "", 20);
+    _monitorLabel->setPosition(origin + Vec2(size.width/2, size.height/2));
+    addChild(_monitorLabel);
+}
+
+void CustomEventOrderTest::onExit()
+{
+    _eventDispatcher->removeEventListener(_beforeDraw);
+    _eventDispatcher->removeEventListener(_beforeDraw2);
+    _eventDispatcher->removeEventListener(_afterDraw);
+    EventDispatcherTestDemo::onExit();
+}
+
+std::string CustomEventOrderTest::title() const
+{
+    return "Test order of custom events";
+}
+
+std::string CustomEventOrderTest::subtitle() const
+{
+    return "On Post Render, the test should write OK!";
+}
+// CROWDSTAR_COCOSPATCH_END
 
 // LabelKeyboardEventTest
 void LabelKeyboardEventTest::onEnter()

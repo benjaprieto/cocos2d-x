@@ -221,6 +221,18 @@ void EditBoxImplMac::nativeCloseKeyboard()
     [_sysEdit closeKeyboard];
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBoxImplMac::setNativeInputRestriction(int inputRestriction)
+{
+    //no-op all done in CCUIEditBoxMac.mm using getInputRestriction()
+}
+
+void EditBoxImplMac::setNativeUneditableTextLength(int uneditableTextLength)
+{
+    //no-op all done in CCUIEditBoxMac.mm using getUneditableTextLength()
+}
+// CROWDSTAR_COCOSPATCH_END
+
 }
 
 NS_CC_END

@@ -390,6 +390,10 @@ static id _createSystemFont( const char * fontName, int size)
     return font;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(iOSDeviceTags)
+static NSMutableArray* tags = nil;
+// CROWDSTAR_COCOSPATCH_END
+
 static bool _initWithString(const char * text, cocos2d::Device::TextAlign align, const char * fontName, int size, tImageInfo* info, bool enableWrap, int overflow)
 {
 
@@ -401,9 +405,19 @@ static bool _initWithString(const char * text, cocos2d::Device::TextAlign align,
         id font = _createSystemFont(fontName, size);
         
         CC_BREAK_IF(! font);
-        
-        NSString * str          = [NSString stringWithUTF8String:text];
+
+// CROWDSTAR_COCOSPATCH_BEGIN
+// Changed str from NSString to NSMutableString      
+        NSMutableString * str          = [NSMutableString stringWithUTF8String:text];
+// CROWDSTAR_COCOSPATCH_END
         CC_BREAK_IF(!str);
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(iOSDeviceTags)
+        UIColor* uiColor = [UIColor colorWithRed:info->tintColorR
+                                           green:info->tintColorG
+                                            blue:info->tintColorB
+                                           alpha:info->tintColorA];
+// CROWDSTAR_COCOSPATCH_END
 
         CGSize dimensions;
         dimensions.width     = info->width;
@@ -426,9 +440,94 @@ static bool _initWithString(const char * text, cocos2d::Device::TextAlign align,
                                              font, NSFontAttributeName,
                                              paragraphStyle, NSParagraphStyleAttributeName, nil];
 
-        NSAttributedString *stringWithAttributes =[[[NSAttributedString alloc] initWithString:str
+// CROWDSTAR_COCOSPATCH_BEGIN(iOSDeviceTags)
+// Changed from NSAttributedString to NSMutableAttributedString
+        NSMutableAttributedString *stringWithAttributes =[[[NSMutableAttributedString alloc] initWithString:str
                                                                                    attributes:tokenAttributesDict] autorelease];
+// CROWDSTAR_COCOSPATCH_END
 
+// CROWDSTAR_COCOSPATCH_BEGIN(iOSDeviceTags)
+        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:uiColor range:NSMakeRange(0, [stringWithAttributes length])];
+        
+        if(!tags)
+        {
+            tags = [NSMutableArray arrayWithObjects:@"<red_1>",@"<strike_1>",@"<green_1>",@"<blue_1>",@"<gray_1>",@"<bold>",@"<gold_1>",@"<blue_1>",@"<black_1>",@"<underline>", nil];
+            [tags retain];
+        }
+        
+        for(NSString *tag in tags)
+        {
+            NSRange divRange = [str rangeOfString:tag options:NSCaseInsensitiveSearch];
+            
+            if(divRange.location != NSNotFound)
+            {
+                // found the tag start
+                NSRange endRange;
+                endRange.location = divRange.length + divRange.location;
+                endRange.length   = [str length] - endRange.location;
+                endRange = [str rangeOfString:@"</>" options:NSCaseInsensitiveSearch range:endRange];
+                
+                if(endRange.location != NSNotFound)
+                {
+                    //found the tag end
+                    [stringWithAttributes replaceCharactersInRange:endRange withString:@""];
+                    [str replaceCharactersInRange:endRange withString:@""];
+                    [stringWithAttributes replaceCharactersInRange:divRange withString:@""];
+                    [str replaceCharactersInRange:divRange withString:@""];
+                    divRange.length = endRange.location - divRange.length - divRange.location;
+                    
+                    if([tag isEqualToString:@"<red_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:216.0/255.0 green:45.0/255.0 blue:60.0/255.0 alpha:1.0] range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<strike_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:divRange];
+                        [stringWithAttributes addAttribute:NSStrikethroughStyleAttributeName value:[NSNumber numberWithInt:NSUnderlineStyleThick] range:divRange];
+                        [stringWithAttributes addAttribute:NSStrikethroughColorAttributeName value:[UIColor grayColor] range:divRange];
+                        
+                    }
+                    else if([tag isEqualToString:@"<green_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:79.0/255.0 green:186.0/255.0 blue:106.0/255.0 alpha:1.0] range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<gray_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<bold>"])
+                    {
+                        id boldfont = [UIFont fontWithName:@"Covet-Bold" size:size];
+                        
+                        if (!boldfont)
+                        {
+                            boldfont = [UIFont systemFontOfSize:size];
+                        }
+                        
+                        [stringWithAttributes addAttribute:NSFontAttributeName value:boldfont range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<gold_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:203.0/255.0 green:170.0/255.0 blue:67.0/255.0 alpha:1.0] range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<blue_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:58.0/255.0 green:155.0/255.0 blue:252.0/255/0 alpha:1.0] range:divRange];
+                        
+                    }
+                    else if([tag isEqualToString:@"<black_1>"])
+                    {
+                        [stringWithAttributes addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:divRange];
+                    }
+                    else if([tag isEqualToString:@"<underline>"])
+                    {
+                        [stringWithAttributes addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInt:NSUnderlineStyleSingle] range:divRange];
+                    }
+                }
+            }
+        }
+// CROWDSTAR_COCOSPATCH_END
+        
         int shrinkFontSize = size;
         CGSize realDimensions;
         if (overflow == 2) {

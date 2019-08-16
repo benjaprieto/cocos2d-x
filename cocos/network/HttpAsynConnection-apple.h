@@ -31,9 +31,19 @@
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+#import <QuartzCore/QuartzCore.h>
+// CROWDSTAR_COCOSPATCH_END
+
 /// @cond
 @interface HttpAsynConnection : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 {
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    CFTimeInterval mach_start1;
+    CFTimeInterval mach_start2;
+    long mach_time1;
+    long mach_time2;
+    // CROWDSTAR_COCOSPATCH_END
 }
 
 // The original URL to download.  Due to redirects the actual content may come from another URL
@@ -58,6 +68,13 @@
 @property bool finish;
 
 @property (strong) NSRunLoop *runLoop;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+@property CFTimeInterval mach_start1;
+@property CFTimeInterval mach_start2;
+@property long mach_time1;
+@property long mach_time2;
+// CROWDSTAR_COCOSPATCH_END
 
 // instructs the class to start the request.
 -(void) startRequest:(NSURLRequest*)request;

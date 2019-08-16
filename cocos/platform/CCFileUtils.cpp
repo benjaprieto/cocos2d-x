@@ -552,6 +552,18 @@ void FileUtils::setDelegate(FileUtils *delegate)
 FileUtils::FileUtils()
     : _writablePath("")
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocPathsForFiles)
+#ifdef LINUX
+    char *assetsRoot = getenv("ASSETS_PATH");
+    _assetsPath = assetsRoot ? assetsRoot : "/tmp/Assets/";
+    
+    char *rawAssetsRoot = getenv("RAW_ASSETS_PATH");
+    _rawAssetsPath = rawAssetsRoot ? rawAssetsRoot : "/tmp/Assets_Raw/";
+    
+    char *binRoot = getenv("BIN_PATH");
+    _binPath = binRoot ? binRoot : "/tmp/bin/";
+#endif
+// CROWDSTAR_COCOSPATCH_END
 }
 
 FileUtils::~FileUtils()

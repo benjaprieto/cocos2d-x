@@ -149,6 +149,51 @@ public:
     std::mutex& getCookieFileMutex() {return _cookieFileMutex;}
 
     std::mutex& getSSLCaFileMutex() {return _sslCaFileMutex;}
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+    typedef std::function<bool(HttpRequest*)> ClearRequestPredicate;
+    typedef std::function<bool(HttpResponse*)> ClearResponsePredicate;
+
+    /**
+     * Clears the pending http responses and http requests
+     * If defined, the method uses the ClearRequestPredicate and ClearResponsePredicate
+     * to check for each request/response which to delete
+     */
+    void clearResponseAndRequestQueue(); 
+
+    /**
+    * Sets a predicate function that is going to be called to determine if we proceed
+    * each of the pending requests
+    *
+    * @param predicate function that will be called 
+    */
+    void setClearRequestPredicate(ClearRequestPredicate predicate) { _clearRequestPredicate = predicate; }
+
+    /**
+     Sets a predicate function that is going to be called to determine if we proceed
+    * each of the pending requests
+    *
+    * @param cb predicate function that will be called 
+    */
+    void setClearResponsePredicate(ClearResponsePredicate predicate) { _clearResponsePredicate = predicate; }
+// CROWDSTAR_COCOSPATCH_END
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+// @todo GMR.Ben: Integrate into Cocos official repository. This is different to the latest patch
+    // for calculating latency. Members had been updated in their names and placed in the corresponding
+    // public / private sections. latency values will now will be updated using the setLatencyValues
+    /**
+     * Sets the latency values
+     * @param client latency client
+     * @param server latency server
+     */
+    void setLatencyValues(long client, long server)
+    {
+        _latency_client = client;
+        _latency_server = server;
+    }
+// CROWDSTAR_COCOSPATCH_END
+        
 private:
     HttpClient();
     virtual ~HttpClient();
@@ -170,7 +215,12 @@ private:
 
 private:
     bool _isInited;
-
+    
+    // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)    
+    long _latency_client;
+    long _latency_server;
+    // CROWDSTAR_COCOSPATCH_END
+    
     int _timeoutForConnect;
     std::mutex _timeoutForConnectMutex;
 
@@ -202,6 +252,11 @@ private:
     char _responseMessage[RESPONSE_BUFFER_SIZE];
 
     HttpRequest* _requestSentinel;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+    ClearRequestPredicate _clearRequestPredicate;
+    ClearResponsePredicate _clearResponsePredicate;
+// CROWDSTAR_COCOSPATCH_END
 };
 
 } // namespace network

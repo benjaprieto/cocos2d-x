@@ -331,14 +331,31 @@ void Renderer::mapBuffers()
     // Avoid changing the element buffer for whatever VAO might be bound.
     GL::bindVAO(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(_verts[0]) * VBO_SIZE, _verts, GL_DYNAMIC_DRAW);
+// CROWDSTAR_COCOSPATCH_BEGIN(RendererBindBufferOptimization)
+// Following code lines are commented:
+// Not setting the buffer data as it was causing to drop frame rate significantly on certain
+// android devices: Nexus 5x, Nexus 6p and Nexus6. This is not required currently as in
+// drawBatchedTriangles() we do set the glBufferData() which causes it re initialize.
+// Check here if there are any gl crahses
+//
+//        glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
+//        glBufferData(GL_ARRAY_BUFFER, sizeof(_verts[0]) * VBO_SIZE, _verts, GL_DYNAMIC_DRAW);
+//
+// CROWDSTAR_COCOSPATCH_END
     
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * INDEX_VBO_SIZE, _indices, GL_STATIC_DRAW);
+// CROWDSTAR_COCOSPATCH_BEGIN(RendererBindBufferOptimization)
+// Following code lines are commented:
+// Not setting the buffer data as it was causing to drop frame rate significantly on certain
+// android devices: Nexus 5x, Nexus 6p and Nexus6. This is not required currently as in
+// drawBatchedTriangles() we do set the glBufferData() which causes it re initialize. check
+// here if there are any gl crahses
+//
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
+//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * INDEX_VBO_SIZE, _indices, GL_STATIC_DRAW);
+//
+// CROWDSTAR_COCOSPATCH_END
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 

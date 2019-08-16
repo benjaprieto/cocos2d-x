@@ -156,6 +156,9 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 -(void) doAnimationWhenKeyboardMoveWithDuration:(float) duration distance:(float) dis;
 -(void) doAnimationWhenAnotherEditBeClicked;
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+-(void) handleTouchesAfterKeyboardShow;
+// CROWDSTAR_COCOSPATCH_END
 @end
 
 #endif // CC_PLATFORM_IOS

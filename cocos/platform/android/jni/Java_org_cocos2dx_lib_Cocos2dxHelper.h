@@ -37,4 +37,13 @@ extern void conversionEncodingJNI(const char* src, int byteSize, const char* fro
 extern int getDeviceSampleRate();
 extern int getDeviceAudioBufferSizeInFrames();
 
+// CROWDSTAR START
+extern std::string getCurrentLanguageJNI();
+// CROWDSTAR END
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+extern void setInputRestrictionEditBoxJNI(int index, int inputRestriction);
+extern void setUneditableTextLengthEditBoxJNI(int index, int uneditableTextLength);
+// CROWDSTAR_COCOSPATCH_END
+
 #endif /* __Java_org_cocos2dx_lib_Cocos2dxHelper_H__ */

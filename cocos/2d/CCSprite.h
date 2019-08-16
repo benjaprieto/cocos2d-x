@@ -92,7 +92,14 @@ struct transformValues_;
  *
  * The default anchorPoint in Sprite is (0.5, 0.5).
  */
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteInverseHierarchy)
+// [GMR.BPrieto] For Linux we need an inverse class hierarchy
+#ifndef LINUX
 class CC_DLL Sprite : public Node, public TextureProtocol
+#else
+class CC_DLL Sprite : public TextureProtocol, public Node
+#endif
+// CROWDSTAR_COCOSPATCH_END
 {
 public:
     enum class RenderMode {
@@ -550,7 +557,20 @@ CC_CONSTRUCTOR_ACCESS :
      */
     Sprite();
     virtual ~Sprite();
-
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_SPRITE_DEBUG_DRAW
+    /// @name DebugDraw
+    /// @{
+    static void enableDebugDraw(const bool value);
+    static bool getDebugDrawEnabled() { return _debugDrawEnabled; }
+    static void setDebugDrawColor(const Color4F& color);
+    /// @}
+#endif
+// CROWDSTAR_COCOSPATCH_END
+    
     /* Initializes an empty sprite with no parameters. */
     virtual bool init() override;
 
@@ -683,9 +703,15 @@ protected:
     Texture2D*       _texture;              /// Texture2D object that is used to render the sprite
     SpriteFrame*     _spriteFrame;
     TrianglesCommand _trianglesCommand;     ///
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_SPRITE_DEBUG_DRAW
     DrawNode *_debugDrawNode;
 #endif //CC_SPRITE_DEBUG_DRAW
+// CROWDSTAR_COCOSPATCH_END
+
     //
     // Shared data
     //
@@ -726,6 +752,15 @@ protected:
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(Sprite);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_SPRITE_DEBUG_DRAW
+    static bool _debugDrawEnabled;	   /// Is debug drawing of sprites enabled or not
+    static Color4F _debugDrawColor;    /// Color to be used to paint the debug bounding boxes
+#endif
+// CROWDSTAR_COCOSPATCH_END
 };
 
 

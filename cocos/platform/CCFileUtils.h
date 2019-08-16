@@ -487,6 +487,14 @@ public:
      *  Sets writable path.
      */
     virtual void setWritablePath(const std::string& writablePath);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocPathsForFiles)
+#ifdef LINUX
+    std::string getAssetsPath() const { return _assetsPath; }
+    std::string getRawAssetsPath() const { return _rawAssetsPath; }
+    std::string getBinPath() const { return _binPath; }
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
     /**
      *  Sets whether to pop-up a message box when failed to load an image.
@@ -948,6 +956,14 @@ protected:
      * Writable path.
      */
     std::string _writablePath;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocPathsForFiles)
+#ifdef LINUX
+    std::string _assetsPath;
+    std::string _rawAssetsPath;
+    std::string _binPath;
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
     /**
      *  The singleton pointer of FileUtils.

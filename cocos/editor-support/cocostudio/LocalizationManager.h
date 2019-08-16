@@ -3,7 +3,9 @@
 
 #include <string>
 #include <unordered_map>
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 #include "editor-support/cocostudio/CocosStudioExport.h"
 
 namespace cocostudio {

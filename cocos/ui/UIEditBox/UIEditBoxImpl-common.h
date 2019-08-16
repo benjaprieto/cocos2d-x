@@ -103,6 +103,14 @@ public:
     virtual void openKeyboard() override;
     virtual void closeKeyboard() override;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    virtual void setInputRestriction(int inputRestriction) override;
+    virtual void setUneditableTextLength(int uneditableTextLength) override;
+
+    virtual int  getInputRestriction() override { return _inputRestriction; }
+    virtual int  getUneditableTextLength() override { return _uneditableTextLength; }
+// CROWDSTAR_COCOSPATCH_END
+
     virtual void onEndEditing(const std::string& text);
     
     void editBoxEditingDidBegin();
@@ -126,6 +134,12 @@ public:
     virtual const char* getNativeDefaultFontName() = 0;
     virtual void nativeOpenKeyboard() = 0;
     virtual void nativeCloseKeyboard() = 0;
+
+  // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)  
+    virtual void setNativeInputRestriction(int inputRestriction) = 0;
+    virtual void setNativeUneditableTextLength(int uneditableTextLength) = 0;
+  // CROWDSTAR_COCOSPATCH_END
+
     virtual void setNativeMaxLength(int maxLength) {};
 
 
@@ -140,6 +154,9 @@ protected:
     Label* _labelPlaceHolder;
     EditBox::InputMode    _editBoxInputMode;
     EditBox::InputFlag    _editBoxInputFlag;
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    int                   _editBoxInputRestriction;
+// CROWDSTAR_COCOSPATCH_END
     EditBox::KeyboardReturnType  _keyboardReturnType;
     cocos2d::TextHAlignment _alignment;
 
@@ -154,7 +171,11 @@ protected:
 
     Color4B _colText;
     Color4B _colPlaceHolder;
-    
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    int _inputRestriction;
+    int _uneditableTextLength;
+// CROWDSTAR_COCOSPATCH_END
     int   _maxLength;
     Size _contentSize;
     bool _editingMode;

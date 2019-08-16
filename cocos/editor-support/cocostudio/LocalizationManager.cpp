@@ -46,7 +46,13 @@ bool JsonLocalizationManager::initLanguageData(std::string file)
     {
         if (!languageData)
             languageData = new rapidjson::Document;
-        languageData->Parse(data.c_str());
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+// Was:
+//
+//      languageData->Parse(data.c_str());
+//
+        languageData->Parse<0>(data.c_str());
+// CROWDSTAR_COCOSPATCH_END
         if (languageData->IsObject())
             result = true;
         else

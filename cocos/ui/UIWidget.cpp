@@ -970,6 +970,12 @@ bool Widget::hitTest(const Vec2 &pt, const Camera* camera, Vec3 *p) const
 {
     Rect rect;
     rect.size = getContentSize();
+
+// CROWDSTAR_COCOSPATCH_BEGIN(WidgetHitTestFix)
+// Apply Node to World transform to conform to what isScreenPointInRect is expecting
+	rect = RectApplyAffineTransform(rect, getNodeToWorldAffineTransform());
+// CROWDSTAR_COCOSPATCH_END
+
     return isScreenPointInRect(pt, camera, getWorldToNodeTransform(), rect, p);
 }
 

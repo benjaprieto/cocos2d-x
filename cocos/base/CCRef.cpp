@@ -40,6 +40,9 @@ NS_CC_BEGIN
 #if CC_REF_LEAK_DETECTION
 static void trackRef(Ref* ref);
 static void untrackRef(Ref* ref);
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+int Ref::shutdownStarted = 0;
+// CROWDSTAR_COCOSPATCH_END
 #endif
 
 Ref::Ref()
@@ -83,7 +86,9 @@ Ref::~Ref()
 
 #if CC_REF_LEAK_DETECTION
     if (_referenceCount != 0)
+    {
         untrackRef(this);
+    }
 #endif
 }
 
@@ -178,12 +183,37 @@ void Ref::printLeaks()
     {
         log("[memory] WARNING: %d Ref objects still active in memory.\n", (int)__refAllocationList.size());
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+        int counter1 = 0;
+        int counter2 = 0;
+// CROWDSTAR_COCOSPATCH_END
         for (const auto& ref : __refAllocationList)
         {
             CC_ASSERT(ref);
             const char* type = typeid(*ref).name();
-            log("[memory] LEAK: Ref object '%s' still active with reference count %d.\n", (type ? type : ""), ref->getReferenceCount());
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+// Was:
+//
+//          log("[memory] LEAK: Ref object '%s' still active with reference count %d.\n", (type ? type : ""), ref->getReferenceCount());
+//
+            if(ref->getReferenceCount() > 1)
+            {
+                log("[memory] LEAK: Ref object '%s' still active with (> 1) reference count %d.\n", (type ? type : ""), ref->getReferenceCount() );
+                ++counter1;
+            }
+            else if(ref->getReferenceCount() != 0)
+            {
+                log("[memory] LEAK: Ref object '%s' still active with (!= 0)reference count %d.\n", (type ? type : ""), ref->getReferenceCount() );
+                ++counter2;
+            }
+// CROWDSTAR_COCOSPATCH_END
+
         }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)        
+        log("[memory] LEAK: Total count Total [%d] >1 [%d] !=0 [%d] ref> 1 ", __refAllocationList.size(), counter1, counter2 );    }
+// CROWDSTAR_COCOSPATCH_END
     }
 }
 
@@ -198,15 +228,34 @@ static void trackRef(Ref* ref)
 
 static void untrackRef(Ref* ref)
 {
-    std::lock_guard<std::mutex> refLockGuard(__refMutex);
-    auto iter = std::find(__refAllocationList.begin(), __refAllocationList.end(), ref);
-    if (iter == __refAllocationList.end())
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+// if we have started shutdown eveything should be single threaded so we dont worry about guards
+    if(Ref::shutdownStarted==0)
+// CROWDSTAR_COCOSPATCH_END
     {
-        log("[memory] CORRUPTION: Attempting to free (%s) with invalid ref tracking record.\n", typeid(*ref).name());
-        return;
-    }
+        std::lock_guard<std::mutex> refLockGuard(__refMutex);
+        auto iter = std::find(__refAllocationList.begin(), __refAllocationList.end(), ref);
+        if (iter == __refAllocationList.end())
+        {
+            log("[memory] CORRUPTION: Attempting to free (%s) with invalid ref tracking record.\n", typeid(*ref).name());
+            return;
+        }
 
-    __refAllocationList.erase(iter);
+        __refAllocationList.erase(iter);
+    }
+// CROWDSTAR_COCOSPATCH_BEGIN(CCRefMemoryLeakDetectionFix)
+    else
+    {
+        auto iter = std::find(__refAllocationList.begin(), __refAllocationList.end(), ref);
+        if (iter == __refAllocationList.end())
+        {
+            log("[memory] CORRUPTION: Attempting to free (%s) with invalid ref tracking record.\n", typeid(*ref).name());
+            return;
+        }
+
+        __refAllocationList.erase(iter);
+    }
+// CROWDSTAR_COCOSPATCH_END
 }
 
 #endif // #if CC_REF_LEAK_DETECTION

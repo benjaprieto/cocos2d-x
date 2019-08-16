@@ -231,6 +231,10 @@ protected:
     std::string         _errorBuffer;   /// if _responseCode != 200, please read _errorBuffer to find the reason
     std::string         _responseDataString; // the returned raw data. You can also dump it as a string
 
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+    CC_SYNTHESIZE(long, _latency_c, LatencyClient);       /// Total Latency time for client from start request to finish transfer. (in ms)
+    CC_SYNTHESIZE(long, _latency_s, LatencyServer);       /// Total Latency time for server from connection established to finish transfer. (in ms)
+// CROWDSTAR_COCOSPATCH_END
 };
 
 }

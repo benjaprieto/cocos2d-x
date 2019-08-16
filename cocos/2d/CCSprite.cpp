@@ -42,6 +42,17 @@ THE SOFTWARE.
 
 NS_CC_BEGIN
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_SPRITE_DEBUG_DRAW
+
+bool Sprite::_debugDrawEnabled = true;
+Color4F Sprite::_debugDrawColor = Color4F::WHITE; //Color4F::RED
+
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 // MARK: create, init, dealloc
 Sprite* Sprite::createWithTexture(Texture2D *texture)
 {
@@ -305,9 +316,15 @@ bool Sprite::initWithTexture(Texture2D *texture, const Rect& rect, bool rotated)
     return result;
 }
 
-Sprite::Sprite(void)
-: _batchNode(nullptr)
-, _textureAtlas(nullptr)
+Sprite::Sprite()
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// Was:
+// : _batchNode(nullptr)
+// , _textureAtlas(nullptr)
+// Changed to : 
+: _textureAtlas(nullptr)
+, _batchNode(nullptr)
+// CROWDSTAR_COCOSPATCH_END
 , _shouldBeHidden(false)
 , _texture(nullptr)
 , _spriteFrame(nullptr)
@@ -320,10 +337,21 @@ Sprite::Sprite(void)
 , _originalContentSize(Size::ZERO)
 , _stretchEnabled(true)
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_SPRITE_DEBUG_DRAW
-    _debugDrawNode = DrawNode::create();
-    addChild(_debugDrawNode);
+    if (Sprite::_debugDrawEnabled)
+    {
+        _debugDrawNode = DrawNode::create();
+        addChild(_debugDrawNode, INT_MAX);
+    }
+    else
+    {
+        _debugDrawNode = nullptr;
+    }
 #endif //CC_SPRITE_DEBUG_DRAW
+// CROWDSTAR_COCOSPATCH_END
 }
 
 Sprite::~Sprite()
@@ -333,6 +361,23 @@ Sprite::~Sprite()
     CC_SAFE_RELEASE(_spriteFrame);
     CC_SAFE_RELEASE(_texture);
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_SPRITE_DEBUG_DRAW
+void Sprite::enableDebugDraw(const bool value)
+{
+    Sprite::_debugDrawEnabled = value;
+}
+
+void Sprite::setDebugDrawColor(const Color4F& color)
+{
+    Sprite::_debugDrawColor = color;
+}
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 
 /*
  * Texture methods
@@ -372,6 +417,14 @@ void Sprite::setTexture(const std::string &filename)
 
 void Sprite::setTexture(Texture2D *texture)
 {
+// CROWDSTAR_COCOSPATCH_BEGIN(SpriteInverseHierarchy)
+// [GMR.Ben] Not sure the need to set the batchnode to null,
+// perhaps avoid the asserts?
+#ifdef LINUX
+    _batchNode = nullptr;
+#endif
+// CROWDSTAR_COCOSPATCH_END
+    
     if(_glProgramState == nullptr)
     {
         setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP, texture));
@@ -1080,28 +1133,35 @@ void Sprite::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
                                flags);
 
         renderer->addCommand(&_trianglesCommand);
-
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_SPRITE_DEBUG_DRAW
-        _debugDrawNode->clear();
-        auto count = _polyInfo.triangles.indexCount/3;
-        auto indices = _polyInfo.triangles.indices;
-        auto verts = _polyInfo.triangles.verts;
-        for(ssize_t i = 0; i < count; i++)
+        if (Sprite::_debugDrawEnabled && _debugDrawNode)
         {
-            //draw 3 lines
-            Vec3 from =verts[indices[i*3]].vertices;
-            Vec3 to = verts[indices[i*3+1]].vertices;
-            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+            _debugDrawNode->clear();
+            auto count = _polyInfo.triangles.indexCount/3;
+            auto indices = _polyInfo.triangles.indices;
+            auto verts = _polyInfo.triangles.verts;
+            for(ssize_t i = 0; i < count; i++)
+            {
+                //draw 3 lines
+                Vec3 from =verts[indices[i*3]].vertices;
+                Vec3 to = verts[indices[i*3+1]].vertices;
+                _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Sprite::_debugDrawColor);
 
-            from =verts[indices[i*3+1]].vertices;
-            to = verts[indices[i*3+2]].vertices;
-            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+                from =verts[indices[i*3+1]].vertices;
+                to = verts[indices[i*3+2]].vertices;
+                _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Sprite::_debugDrawColor);
 
-            from =verts[indices[i*3+2]].vertices;
-            to = verts[indices[i*3]].vertices;
-            _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Color4F::WHITE);
+                from =verts[indices[i*3+2]].vertices;
+                to = verts[indices[i*3]].vertices;
+                _debugDrawNode->drawLine(Vec2(from.x, from.y), Vec2(to.x,to.y), Sprite::_debugDrawColor);
+            }
         }
-#endif //CC_SPRITE_DEBUG_DRAW
+#endif
+// CROWDSTAR_COCOSPATCH_END
     }
 }
 

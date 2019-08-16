@@ -320,8 +320,12 @@ bool RenderTexture::initWithWidthAndHeight(int w, int h, Texture2D::PixelFormat 
         // check if it worked (probably worth doing :) )
         CCASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Could not attach texture to framebuffer");
 
-        _texture->setAliasTexParameters();
-
+// CROWDSTAR_COCOSPATCH_BEGIN(CommentedSetAliasParameters)
+// The following line was commented
+// @todo [GMR.Ben] Add reason for commenting the line!
+//        _texture->setAliasTexParameters();
+// CROWDSTAR_COCOSPATCH_END
+        
         // retained
         setSprite(Sprite::createWithTexture(_texture));
 
@@ -500,12 +504,34 @@ bool RenderTexture::saveToFile(const std::string& filename, bool isRGBA, std::fu
     return saveToFile(filename, Image::Format::JPG, false, callback);
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocRenderToTextureSaving)
+#ifdef CROWDSTAR_ADHOC_SAVE_RENDERTEXTURE
+void RenderTexture::crowdstarAdhocSaveToFile(const std::string& fileName, bool isRGBA)
+{
+    Image *image = newImage(true);
+    if (image)
+    {
+        image->saveToFile(fileName.c_str(), !isRGBA);
+    }
+    if(_saveFileCallback)
+    {
+        _saveFileCallback(this, fileName);
+    }
+    CC_SAFE_DELETE(image);
+}
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 bool RenderTexture::saveToFile(const std::string& fileName, Image::Format format, bool isRGBA, std::function<void (RenderTexture*, const std::string&)> callback)
 {
     CCASSERT(format == Image::Format::JPG || format == Image::Format::PNG,
              "the image can only be saved as JPG or PNG format");
     if (isRGBA && format == Image::Format::JPG) CCLOG("RGBA is not supported for JPG format");
     
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocRenderToTextureSaving)
+#ifdef CROWDSTAR_ADHOC_SAVE_RENDERTEXTURE
+    crowdstarAdhocSaveToFile(fileName,  isRGBA);
+#else
     _saveFileCallback = callback;
     
     std::string fullpath = FileUtils::getInstance()->getWritablePath() + fileName;
@@ -513,6 +539,8 @@ bool RenderTexture::saveToFile(const std::string& fileName, Image::Format format
     _saveToFileCommand.func = CC_CALLBACK_0(RenderTexture::onSaveToFile, this, fullpath, isRGBA);
     
     Director::getInstance()->getRenderer()->addCommand(&_saveToFileCommand);
+#endif
+// CROWDSTAR_COCOSPATCH_END
     return true;
 }
 

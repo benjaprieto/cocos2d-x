@@ -37,6 +37,9 @@ THE SOFTWARE.
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 static const std::string className = "org/cocos2dx/lib/Cocos2dxHelper";
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+static const std::string editBoxClassName = "org/cocos2dx/lib/Cocos2dxEditBoxHelper";
+// CROWDSTAR_COCOSPATCH_END
 
 static EditTextCallback s_editTextCallback = nullptr;
 static void* s_ctx = nullptr;
@@ -129,6 +132,45 @@ int getDeviceAudioBufferSizeInFrames()
 {
     return __deviceAudioBufferSizeInFrames;
 }
+
+// CROWDSTAR START
+std::string getCurrentLanguageJNI() {
+    JniMethodInfo t;
+    std::string ret("");
+    
+    if (JniHelper::getStaticMethodInfo(t, className.c_str(), "getCurrentLanguage", "()Ljava/lang/String;")) {
+        jstring str = (jstring)t.env->CallStaticObjectMethod(t.classID, t.methodID);
+        t.env->DeleteLocalRef(t.classID);
+        ret = JniHelper::jstring2string(str);
+        t.env->DeleteLocalRef(str);
+    }
+
+    return ret;
+}
+// CROWDSTAR END
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void setInputRestrictionEditBoxJNI(int index, int inputRestriction) 
+{
+    JniMethodInfo t;
+
+    if (JniHelper::getStaticMethodInfo(t, editBoxClassName.c_str(), "setInputRestriction", "(II)V")) {
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, index, inputRestriction);
+        t.env->DeleteLocalRef(t.classID);
+    }
+}
+
+void setUneditableTextLengthEditBoxJNI(int index, int uneditableTextLength) 
+{
+    JniMethodInfo t;
+
+    if (JniHelper::getStaticMethodInfo(t, editBoxClassName.c_str(), "setUneditableTextLength", "(II)V")) {
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, index, uneditableTextLength);
+        t.env->DeleteLocalRef(t.classID);
+    }
+}
+// CROWDSTAR_COCOSPATCH_END
+
 
 void conversionEncodingJNI(const char* src, int byteSize, const char* fromCharset, char* dst, const char* newCharset)
 {

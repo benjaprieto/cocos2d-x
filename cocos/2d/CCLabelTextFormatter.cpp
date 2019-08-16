@@ -72,12 +72,12 @@ void Label::computeAlignmentOffset()
     }
 }
 
-int Label::getFirstCharLen(const std::u32string& /*utf32Text*/, int /*startIndex*/, int /*textLen*/)
+int Label::getFirstCharLen(const std::u32string& /*utf32Text*/, int /*startIndex*/, int /*textLen*/) const
 {
     return 1;
 }
 
-int Label::getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen)
+int Label::getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen) const
 {
     auto character = utf32Text[startIndex];
     if (StringUtils::isCJKUnicode(character) || StringUtils::isUnicodeSpace(character) || character == (char32_t)TextFormatter::NewLine)

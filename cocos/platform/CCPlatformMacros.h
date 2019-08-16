@@ -210,19 +210,34 @@ private: varType varName; public: virtual inline varType get##funName(void) cons
 
 /// @name Cocos2d debug
 /// @{
-#if !defined(COCOS2D_DEBUG) || COCOS2D_DEBUG == 0
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+// Was:
+// #if !defined(COCOS2D_DEBUG) || COCOS2D_DEBUG == 0
+// Changed to:
+#if (!defined(LINUX) && (!defined(COCOS2D_DEBUG) || COCOS2D_DEBUG == 0)) || (defined(LINUX) && !defined(STAGING) && !defined(DEBUG))
+// CROWDSTAR_COCOSPATCH_END
 #define CCLOG(...)       do {} while (0)
 #define CCLOGINFO(...)   do {} while (0)
 #define CCLOGERROR(...)  do {} while (0)
 #define CCLOGWARN(...)   do {} while (0)
 
-#elif COCOS2D_DEBUG == 1
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+// Was: 
+// #elif COCOS2D_DEBUG == 1
+// Changed to:
+#elif (!defined(LINUX) && COCOS2D_DEBUG == 1) || (defined(LINUX) && defined(STAGING))
+// CROWDSTAR_COCOSPATCH_END
 #define CCLOG(format, ...)      cocos2d::log(format, ##__VA_ARGS__)
 #define CCLOGERROR(format,...)  cocos2d::log(format, ##__VA_ARGS__)
 #define CCLOGINFO(format,...)   do {} while (0)
 #define CCLOGWARN(...) __CCLOGWITHFUNCTION(__VA_ARGS__)
 
-#elif COCOS2D_DEBUG > 1
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+// Was: 
+// #elif COCOS2D_DEBUG > 1
+// Changed to:
+#elif (!defined(LINUX) && COCOS2D_DEBUG > 1) || (defined(LINUX) && defined(DEBUG))
+// CROWDSTAR_COCOSPATCH_END
 #define CCLOG(format, ...)      cocos2d::log(format, ##__VA_ARGS__)
 #define CCLOGERROR(format,...)  cocos2d::log(format, ##__VA_ARGS__)
 #define CCLOGINFO(format,...)   cocos2d::log(format, ##__VA_ARGS__)

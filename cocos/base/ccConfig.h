@@ -33,7 +33,7 @@ THE SOFTWARE.
 /**
  * @file
  * cocos2d (cc) configuration file.
-*/
+ */
 
 /** @def CC_ENABLE_STACKABLE_ACTIONS
  * If enabled, actions that alter the position property (eg: MoveBy, JumpBy, BezierBy, etc..) will be stacked.
@@ -58,7 +58,7 @@ THE SOFTWARE.
  * It is recommended to enable whenever possible to improve speed.
  * If you are migrating your code from GL ES 1.1, then keep it disabled. Once all your code works as expected, turn it on.
 
- * Default value: Enabled by default
+ * Enabled by default.
 
  * @since v2.0.0
  */
@@ -176,28 +176,31 @@ THE SOFTWARE.
 #define CC_USE_LA88_LABELS 1
 #endif
 
+
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+
 /** @def CC_SPRITE_DEBUG_DRAW
  * If enabled, all subclasses of Sprite will draw a bounding box.
  * Useful for debugging purposes only. It is recommended to leave it disabled.
- * To enable set it to a value different than 0. Disabled by default:
- * 0 -- disabled
- * 1 -- draw bounding box
- * 2 -- draw texture box
+ * To enable set it to a value different than 0. Disabled by default.
+ * To toggle bounding boxes in runtime, use Sprite::enableDebugDraw(true)
  */
 #ifndef CC_SPRITE_DEBUG_DRAW
-#define CC_SPRITE_DEBUG_DRAW 0
+    #define CC_SPRITE_DEBUG_DRAW 0
 #endif
 
 /** @def CC_LABEL_DEBUG_DRAW
-* If enabled, all subclasses of Label will draw a bounding box.
-* Useful for debugging purposes only. It is recommended to leave it disabled.
-* To enable set it to a value different than 0. Disabled by default:
-* 0 -- disabled
-* 1 -- draw bounding box
-*/
+ * If enabled, all subclasses of Label will be able to draw a bounding box.
+ * Useful for debugging purposes only. It is recommended to leave it disabled.
+ * To enable set it to a value different than 0. Disabled by default.
+ * To toggle bounding boxes in runtime, use Label::enableDebugDraw(true);
+ */
 #ifndef CC_LABEL_DEBUG_DRAW
-#define CC_LABEL_DEBUG_DRAW 0
+    #define CC_LABEL_DEBUG_DRAW 0
 #endif
+// // CROWDSTAR_COCOSPATCH_END
 
 /** @def CC_SPRITEBATCHNODE_DEBUG_DRAW
  * If enabled, all subclasses of Sprite that are rendered using an SpriteBatchNode draw a bounding box.
@@ -253,26 +256,26 @@ THE SOFTWARE.
 
 /** Use physics integration API. */
 #ifndef CC_USE_PHYSICS
-#define CC_USE_PHYSICS 1
+#define CC_USE_PHYSICS 0
 #endif
 
 /** Use 3d physics integration API. */
 #ifndef CC_USE_3D_PHYSICS
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-#define CC_USE_3D_PHYSICS 1
+#define CC_USE_3D_PHYSICS 0
 #endif
 #endif
 
 #if (CC_USE_3D_PHYSICS)
 /** Use bullet physics engine. */
 #ifndef CC_ENABLE_BULLET_INTEGRATION
-#define CC_ENABLE_BULLET_INTEGRATION 1
+#define CC_ENABLE_BULLET_INTEGRATION 0
 #endif
 #endif
 
 /** Use 3D navigation API */
 #ifndef CC_USE_NAVMESH
-#define CC_USE_NAVMESH 1
+#define CC_USE_NAVMESH 0
 #endif
 
 /** Use culling or not. */
@@ -306,7 +309,7 @@ THE SOFTWARE.
 #endif
 #endif // CC_USE_WEBP
 
- /** Support WIC (Windows Image Component) or not. Replaces PNG, TIFF and JPEG
+/** Support WIC (Windows Image Component) or not. Replaces PNG, TIFF and JPEG
  */
 #ifndef CC_USE_WIC
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
@@ -319,7 +322,7 @@ THE SOFTWARE.
 
 /** Enable Script binding. */
 #ifndef CC_ENABLE_SCRIPT_BINDING
-#define CC_ENABLE_SCRIPT_BINDING 1
+#define CC_ENABLE_SCRIPT_BINDING 0
 #endif
 
 /** When CC_ENABLE_SCRIPT_BINDING and CC_ENABLE_GC_FOR_NATIVE_OBJECTS are both 1

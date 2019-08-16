@@ -55,6 +55,10 @@ EditBoxImplCommon::EditBoxImplCommon(EditBox* pEditText)
 , _placeholderFontSize(-1)
 , _colText(Color3B::WHITE)
 , _colPlaceHolder(Color3B::GRAY)
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+, _inputRestriction(0)
+, _uneditableTextLength(0)
+// CROWDSTAR_COCOSPATCH_END
 , _maxLength(-1)
 , _alignment(TextHAlignment::LEFT)
 , _editingMode(false)
@@ -102,6 +106,12 @@ void EditBoxImplCommon::initInactiveLabels(const Size& size)
     
     setFont(pDefaultFontName, size.height*2/3);
     setPlaceholderFont(pDefaultFontName, size.height*2/3);
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+#ifndef ANDROID
+    this->setNativeVisible(true);
+#endif
+// CROWDSTAR_COCOSPATCH_END
 }
 
 void EditBoxImplCommon::placeInactiveLabels(const Size& size)
@@ -132,25 +142,32 @@ void EditBoxImplCommon::placeInactiveLabels(const Size& size)
 
 void EditBoxImplCommon::setInactiveText(const char* pText)
 {
-    if(EditBox::InputFlag::PASSWORD == _editBoxInputFlag)
-    {
-        std::string passwordString;
-        for(size_t i = 0; i < strlen(pText); ++i)
-            passwordString.append(PASSWORD_CHAR);
-        _label->setString(passwordString);
-    }
-    else
-    {
-        _label->setString(pText);
-    }
-    // Clip the text width to fit to the text box
-    float fMaxWidth = _editBox->getContentSize().width;
-    float fMaxHeight = _editBox->getContentSize().height;
-    Size labelSize = _label->getContentSize();
-    if(labelSize.width > fMaxWidth || labelSize.height > fMaxHeight)
-    {
-        _label->setDimensions(fMaxWidth, fMaxHeight);
-    }
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Code was commented
+// @todo [GMR.Ben] Document why!
+//
+//
+//    if(EditBox::InputFlag::PASSWORD == _editBoxInputFlag)
+//    {
+//        std::string passwordString;
+//        for(size_t i = 0; i < strlen(pText); ++i)
+//            passwordString.append(PASSWORD_CHAR);
+//        _label->setString(passwordString);
+//    }
+//    else
+//    {
+//        _label->setString(pText);
+//    }
+//    // Clip the text width to fit to the text box
+//    float fMaxWidth = _editBox->getContentSize().width;
+//    float fMaxHeight = _editBox->getContentSize().height;
+//    Size labelSize = _label->getContentSize();
+//    if(labelSize.width > fMaxWidth || labelSize.height > fMaxHeight)
+//    {
+//        _label->setDimensions(fMaxWidth, fMaxHeight);
+//    }
+//
+// CROWDSTAR_COCOSPATCH_END
 }
     
 void EditBoxImplCommon::setFont(const char* pFontName, int fontSize)
@@ -227,21 +244,30 @@ void EditBoxImplCommon::setReturnType(EditBox::KeyboardReturnType returnType)
     _keyboardReturnType = returnType;
     this->setNativeReturnType(returnType);
 }
-    
+
 void EditBoxImplCommon::refreshInactiveText()
 {
-    setInactiveText(_text.c_str());
-
-    refreshLabelAlignment();
-    if (!_editingMode) {
-        if (_text.size() == 0) {
-            _label->setVisible(false);
-            _labelPlaceHolder->setVisible(true);
-        } else {
-            _label->setVisible(true);
-            _labelPlaceHolder->setVisible(false);
-        }
-    }
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Previous code:
+//
+//    setInactiveText(_text.c_str());
+//
+//    refreshLabelAlignment();
+//    if (!_editingMode) {
+//        if (_text.size() == 0) {
+//            _label->setVisible(false);
+//            _labelPlaceHolder->setVisible(true);
+//        } else {
+//            _label->setVisible(true);
+//            _labelPlaceHolder->setVisible(false);
+//        }
+//    }
+//
+   
+    _label->setVisible(false);
+    _labelPlaceHolder->setVisible(false);
+    
+// CROWDSTAR_COCOSPATCH_END
 }
 
 void EditBoxImplCommon::refreshLabelAlignment()
@@ -265,7 +291,15 @@ void EditBoxImplCommon::setPlaceHolder(const char* pText)
     {
         _placeHolder = pText;
         this->setNativePlaceHolder(pText);
-        _labelPlaceHolder->setString(_placeHolder);
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Following line was commented
+// @todo [GMR.Ben] Document why!
+//
+//        _labelPlaceHolder->setString(_placeHolder);
+//
+// CROWDSTAR_COCOSPATCH_END
+        
     }
 }
 
@@ -319,11 +353,33 @@ void EditBoxImplCommon::closeKeyboard()
     _editingMode = false;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBoxImplCommon::setInputRestriction(int inputRestriction)
+{
+    _editBoxInputRestriction = inputRestriction;
+    this->setNativeInputRestriction(inputRestriction);
+}
+
+void EditBoxImplCommon::setUneditableTextLength(int uneditableTextLength)
+{
+    this->setNativeUneditableTextLength(uneditableTextLength);
+}
+// CROWDSTAR_COCOSPATCH_END
+
+
 void EditBoxImplCommon::onEndEditing(const std::string& /*text*/)
 {
-    _editingMode = false;
-    this->setNativeVisible(false);
-    refreshInactiveText();
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// Code was commented
+// @todo [GMR.Ben] Document why!
+//
+//    _editingMode = false;
+//    this->setNativeVisible(false);
+//    refreshInactiveText();
+//
+// CROWDSTAR_COCOSPATCH_END
+    
 }
     
 void EditBoxImplCommon::editBoxEditingDidBegin()

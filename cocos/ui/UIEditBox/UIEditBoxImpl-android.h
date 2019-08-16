@@ -63,7 +63,10 @@ public:
     virtual void setNativeInputMode(EditBox::InputMode inputMode) override;
     virtual void setNativeInputFlag(EditBox::InputFlag inputFlag) override;
     virtual void setNativeReturnType(EditBox::KeyboardReturnType returnType)override;
-    virtual void setNativeTextHorizontalAlignment(cocos2d::TextHAlignment alignment);
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+// added override
+    virtual void setNativeTextHorizontalAlignment(cocos2d::TextHAlignment alignment) override;
+// CROWDSTAR_COCOSPATCH_END
     virtual void setNativeText(const char* pText) override;
     virtual void setNativePlaceHolder(const char* pText) override;
     virtual void setNativeVisible(bool visible) override;
@@ -72,6 +75,11 @@ public:
     virtual void nativeOpenKeyboard() override;
     virtual void nativeCloseKeyboard() override;
     virtual void setNativeMaxLength(int maxLength) override;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    virtual void setNativeInputRestriction(int inputRestriction) override;
+    virtual void setNativeUneditableTextLength(int uneditableTextLength) override;
+// CROWDSTAR_COCOSPATCH_END
     
 private:
     int _editBoxIndex;

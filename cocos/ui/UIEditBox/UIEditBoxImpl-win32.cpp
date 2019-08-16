@@ -310,6 +310,19 @@ namespace ui {
     {
         //don't need to implement
     }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    void EditBoxImplWin::setNativeInputRestriction(int inputRestriction) 
+    { 
+        // not implemented yet     
+    }
+
+    void EditBoxImplWin::setNativeUneditableTextLength(int uneditableTextLength) 
+    { 
+        // not implemented yet     
+    } 
+// CROWDSTAR_COCOSPATCH_END
+
     void EditBoxImplWin::setNativeMaxLength(int maxLength)
     {
 

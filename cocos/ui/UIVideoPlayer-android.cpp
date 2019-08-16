@@ -64,6 +64,28 @@ int createVideoWidgetJNI()
     return ret;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+void setLoopingJNI(int index, bool looping)
+{
+    JniMethodInfo t;
+    if (JniHelper::getStaticMethodInfo(t, videoHelperClassName.c_str(), "setLooping", "(IZ)V")) {
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, index, looping);
+
+        t.env->DeleteLocalRef(t.classID);
+    }
+}
+
+void setUserInputEnabledJNI(int index, bool enableInput)
+{
+    JniMethodInfo t;
+    if (JniHelper::getStaticMethodInfo(t, videoHelperClassName.c_str(), "setUserInputEnabled", "(IZ)V")) {
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, index, enableInput);
+
+        t.env->DeleteLocalRef(t.classID);
+    }
+}
+// CROWDSTAR_COCOSPATCH_END
+
 //-----------------------------------------------------------------------------------------------------------
 
 using namespace cocos2d::experimental::ui;
@@ -76,6 +98,12 @@ VideoPlayer::VideoPlayer()
 , _keepAspectRatioEnabled(false)
 , _videoPlayerIndex(-1)
 , _eventCallback(nullptr)
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+, _isPlaying(false)
+, _isLooping(false)
+, _isUserInputEnabled(true)
+, _styleType(StyleType::DEFAULT)
+    // CROWDSTAR_COCOSPATCH_END
 {
     _videoPlayerIndex = createVideoWidgetJNI();
     s_allVideoPlayers[_videoPlayerIndex] = this;
@@ -107,6 +135,25 @@ void VideoPlayer::setURL(const std::string& videoUrl)
     JniHelper::callStaticVoidMethod(videoHelperClassName, "setVideoUrl", _videoPlayerIndex,
                                     (int)Source::URL,_videoURL);
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+void VideoPlayer::setLooping(bool looping)
+{
+    _isLooping = looping;
+    setLoopingJNI(_videoPlayerIndex, _isLooping);
+}
+
+void VideoPlayer::setUserInputEnabled(bool enableInput)
+{
+    _isUserInputEnabled = enableInput;
+    setUserInputEnabledJNI(_videoPlayerIndex, enableInput);
+}
+
+void VideoPlayer::setStyle(StyleType style)
+{
+    _styleType = style;
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void VideoPlayer::draw(Renderer* renderer, const Mat4 &transform, uint32_t flags)
 {
@@ -230,6 +277,18 @@ bool VideoPlayer::isPlaying() const
     return _isPlaying;
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+bool VideoPlayer::isLooping() const
+{
+    return _isLooping;
+}
+
+bool VideoPlayer::isUserInputEnabled() const
+{
+    return _isUserInputEnabled;
+}
+// CROWDSTAR_COCOSPATCH_END
+
 void VideoPlayer::setVisible(bool visible)
 {
     cocos2d::ui::Widget::setVisible(visible);
@@ -293,6 +352,11 @@ void VideoPlayer::copySpecialProperties(Widget *widget)
     if (videoPlayer)
     {
         _isPlaying = videoPlayer->_isPlaying;
+// CROWDSTAR_COCOSPATCH_BEGIN(UIVideoPlayer_looping)
+        _isLooping = videoPlayer->_isLooping;
+        _isUserInputEnabled = videoPlayer->_isUserInputEnabled;
+        _styleType = videoPlayer->_styleType;
+// CROWDSTAR_COCOSPATCH_END
         _fullScreenEnabled = videoPlayer->_fullScreenEnabled;
         _fullScreenDirty = videoPlayer->_fullScreenDirty;
         _videoURL = videoPlayer->_videoURL;

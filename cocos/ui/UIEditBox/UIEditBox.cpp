@@ -50,6 +50,23 @@ EditBox::~EditBox(void)
 #endif
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBox::setInputRestriction(int inputRestriction)
+{
+    if (_editBoxImpl)
+    {
+        _editBoxImpl->setInputRestriction(inputRestriction);
+    }
+}
+
+void EditBox::setUneditableTextLength(int uneditableTextLength)
+{
+    if (_editBoxImpl)
+    {
+        _editBoxImpl->setUneditableTextLength(uneditableTextLength);
+    }
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void EditBox::touchDownAction(Ref* /*sender*/, TouchEventType controlEvent)
 {
@@ -99,7 +116,13 @@ bool EditBox::initWithSizeAndBackgroundSprite(const cocos2d::Size &size, cocos2d
     {
         _editBoxImpl = __createSystemEditBox(this);
         _editBoxImpl->initWithSize(size);
-        _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo [GMR.Ben] Document why following line was commented
+//
+//        _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
+//
+// CROWDSTAR_COCOSPATCH_END
         
         _backgroundSprite = pNormal9SpriteBg;
         
@@ -128,7 +151,13 @@ bool EditBox::initWithSizeAndBackgroundSprite(const Size& size,
     {
         _editBoxImpl = __createSystemEditBox(this);
         _editBoxImpl->initWithSize(size);
-        _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
+        
+// CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @todo [GMR.Ben] Document why following line was commented
+//
+//         _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
+//
+// CROWDSTAR_COCOSPATCH_END
        
         if (texType == Widget::TextureResType::LOCAL)
         {

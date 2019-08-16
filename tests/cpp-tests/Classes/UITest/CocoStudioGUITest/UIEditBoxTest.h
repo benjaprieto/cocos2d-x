@@ -72,4 +72,15 @@ protected:
     cocos2d::Node* _editEmailParent;
 };
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+class UIEditBoxTestRestrictions : public UIScene
+{
+public:
+    CREATE_FUNC(UIEditBoxTestRestrictions);
+    virtual bool init() override;
+    
+    cocos2d::ui::EditBox* _editbox;
+    cocos2d::ui::EditBox* _editbox2;
+};
+// CROWDSTAR_COCOSPATCH_END
 #endif /* defined(__cocos2d_tests__UIEditBoxTest__) */

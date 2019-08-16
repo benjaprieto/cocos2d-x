@@ -46,6 +46,10 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
     private int mScreenWidth;
     private int mScreenHeight;
     private boolean mNativeInitCompleted = false;
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+    private String mGLVendor;
+    private String mGLRenderer;
+// CROWDSTAR_COCOSPATCH_END
 
     // ===========================================================
     // Constructors
@@ -64,6 +68,16 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
         this.mScreenHeight = surfaceHeight;
     }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+    public String getGLVendor() {
+        return mGLVendor;
+    }
+
+    public String getGLRenderer() {
+        return mGLRenderer;
+    }
+// CROWDSTAR_COCOSPATCH_END
+
     // ===========================================================
     // Methods for/from SuperClass/Interfaces
     // ===========================================================
@@ -73,6 +87,11 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
         Cocos2dxRenderer.nativeInit(this.mScreenWidth, this.mScreenHeight);
         this.mLastTickInNanoSeconds = System.nanoTime();
         mNativeInitCompleted = true;
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Cocos2DXSurfaceViewGetters)
+        mGLVendor = GL10.glGetString(GL10.GL_VENDOR);
+        mGLRenderer = GL10.glGetString(GL10.GL_RENDERER);
+// CROWDSTAR_COCOSPATCH_END
     }
 
     @Override

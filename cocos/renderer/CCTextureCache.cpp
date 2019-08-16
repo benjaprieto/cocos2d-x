@@ -41,7 +41,15 @@ THE SOFTWARE.
 #include "base/ccUtils.h"
 #include "base/CCNinePatchImageParser.h"
 
-
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+#ifdef LINUX
+#include <fcntl.h>
+#include "json/document.h"
+#include "json/writer.h"
+#include "json/stringbuffer.h"
+#include "../../../ExternalLibraries/CoreMobile/LibCoreMobile/Utils/md5.h"
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
 using namespace std;
 
@@ -105,20 +113,37 @@ struct TextureCache::AsyncStruct
 {
 public:
     AsyncStruct
-    ( const std::string& fn,const std::function<void(Texture2D*)>& f,
-      const std::string& key )
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Code was:
+//    ( const std::string& fn,const std::function<void(Texture2D*)>& f,
+//      const std::string& key )
+//
+    ( const std::string& fn,const std::function<void(Texture2D*, std::string)>& f,
+      const std::string& key, Ref* t = nullptr )
+// CROWDSTAR_COCOSPATCH_END
       : filename(fn), callback(f),callbackKey( key ),
         pixelFormat(Texture2D::getDefaultAlphaPixelFormat()),
         loadSuccess(false)
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+		,target(t)
+// CROWDSTAR_COCOSPATCH_END
     {}
 
     std::string filename;
-    std::function<void(Texture2D*)> callback;
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Added string parameter
+    std::function<void(Texture2D*, std::string)> callback;
+// CROWDSTAR_COCOSPATCH_END
     std::string callbackKey;
     Image image;
     Image imageAlpha;
     Texture2D::PixelFormat pixelFormat;
     bool loadSuccess;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+    Ref* target;
+// CROWDSTAR_COCOSPATCH_END
+
 };
 
 /**
@@ -151,10 +176,18 @@ public:
  Call unbindImageAsync(path) to prevent the call to the callback when the
  texture is loaded.
  */
-void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback)
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+// void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback)
+// {
+//    addImageAsync( path, callback, path );
+// }
+void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*, std::string)>& callback)
 {
-    addImageAsync( path, callback, path );
+    addImageAsync( path, callback, path, nullptr );
 }
+// CROWDSTAR_COCOSPATCH_END
 
 /**
  The addImageAsync logic follow the steps:
@@ -188,7 +221,13 @@ void TextureCache::addImageAsync(const std::string &path, const std::function<vo
  unbind the callback independently as needed whilst a call to
  unbindImageAsync(path) would be ambiguous.
  */
-void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback, const std::string& callbackKey)
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+// void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback, const std::string& callbackKey)
+//
+//
+void TextureCache::addImageAsync(const std::string &path, const std::function<void(Texture2D*, std::string)>& callback, const std::string& callbackKey, Ref* target)
+// CROWDSTAR_COCOSPATCH_END
 {
     Texture2D *texture = nullptr;
 
@@ -200,13 +239,23 @@ void TextureCache::addImageAsync(const std::string &path, const std::function<vo
 
     if (texture != nullptr)
     {
-        if (callback) callback(texture);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//        if (callback) callback(texture);
+//
+        if (callback) callback(texture, path);
+// CROWDSTAR_COCOSPATCH_END
         return;
     }
 
     // check if file exists
     if (fullpath.empty() || !FileUtils::getInstance()->isFileExist(fullpath)) {
-        if (callback) callback(nullptr);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//        if (callback) callback(nullptr);
+//
+        if (callback) callback(nullptr, "");
+// CROWDSTAR_COCOSPATCH_END
         return;
     }
 
@@ -227,7 +276,12 @@ void TextureCache::addImageAsync(const std::string &path, const std::function<vo
 
     // generate async struct
     AsyncStruct *data =
-      new (std::nothrow) AsyncStruct(fullpath, callback, callbackKey);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//      new (std::nothrow) AsyncStruct(fullpath, callback, callbackKey);
+//
+      new (std::nothrow) AsyncStruct(fullpath, callback, callbackKey, target);
+// CROWDSTAR_COCOSPATCH_END
     
     // add async struct into queue
     _asyncStructQueue.push_back(data);
@@ -238,8 +292,16 @@ void TextureCache::addImageAsync(const std::string &path, const std::function<vo
     _sleepCondition.notify_one();
 }
 
-void TextureCache::unbindImageAsync(const std::string& callbackKey)
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+// void TextureCache::unbindImageAsync(const std::string &callbackKey)
+// {
+//
+void TextureCache::unbindImageAsync(const std::string &callbackKey, Ref* target)
 {
+    bool bFound = false;
+// CROWDSTAR_COCOSPATCH_END
+    
     if (_asyncStructQueue.empty())
     {
         return;
@@ -247,11 +309,31 @@ void TextureCache::unbindImageAsync(const std::string& callbackKey)
 
     for (auto& asyncStruct : _asyncStructQueue)
     {
-        if (asyncStruct->callbackKey == callbackKey)
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//        if (asyncStruct->callbackKey == callbackKey)
+//
+        if (asyncStruct->callbackKey == callbackKey && asyncStruct->target == target)
+// CROWDSTAR_COCOSPATCH_END
         {
             asyncStruct->callback = nullptr;
+            
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+            asyncStruct->target = nullptr;
+            bFound = true;
+// CROWDSTAR_COCOSPATCH_END
+            
         }
     }
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+    if (!bFound)
+    {
+        _limboUnbindMutex.lock();
+        _limboUnbindFiles.insert(callbackKey);
+        _limboUnbindMutex.unlock();
+    }
+// CROWDSTAR_COCOSPATCH_END
 }
 
 void TextureCache::unbindAllImageAsync()
@@ -264,6 +346,9 @@ void TextureCache::unbindAllImageAsync()
     for (auto& asyncStruct : _asyncStructQueue)
     {
         asyncStruct->callback = nullptr;
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+        asyncStruct->target = nullptr;
+// CROWDSTAR_COCOSPATCH_END
     }
 }
 
@@ -381,7 +466,19 @@ void TextureCache::addImageAsyncCallBack(float /*dt*/)
         // call callback function
         if (asyncStruct->callback)
         {
-            (asyncStruct->callback)(texture);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//
+//             (asyncStruct->callback)(texture);
+//
+            _limboUnbindMutex.lock();
+            bool bFound = (_limboUnbindFiles.erase(asyncStruct->filename) == 1);
+            _limboUnbindMutex.unlock();
+            if (!bFound)
+            {
+				(asyncStruct->callback)(texture, asyncStruct->filename);
+			}
+// CROWDSTAR_COCOSPATCH_END
         }
 
         // release the asyncStruct
@@ -395,7 +492,12 @@ void TextureCache::addImageAsyncCallBack(float /*dt*/)
     }
 }
 
-Texture2D * TextureCache::addImage(const std::string &path)
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+// Texture2D * TextureCache::addImage(const std::string &path)
+//
+Texture2D * TextureCache::addImage(const std::string &path, bool useAlpha, int parentGarmentVersion)
+// CROWDSTAR_COCOSPATCH_END
 {
     Texture2D * texture = nullptr;
     Image* image = nullptr;
@@ -404,6 +506,24 @@ Texture2D * TextureCache::addImage(const std::string &path)
     // Needed since addImageAsync calls this method from a different thread
 
     std::string fullpath = FileUtils::getInstance()->fullPathForFilename(path);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+#ifdef LINUX
+    string assetsPath = FileUtils::getInstance()->getAssetsPath();
+    bool isAssetsFile = fullpath.find(assetsPath) != string::npos;
+    
+    string relPath;
+    if (isAssetsFile)
+    {
+        relPath = path.substr(path.find("/") + 1);
+        relPath = relPath.substr(relPath.find("/") + 1);
+        relPath = relPath.substr(relPath.find("/") + 1);
+        
+        fullpath = assetsPath + relPath;
+    }
+#endif
+// CROWDSTAR_COCOSPATCH_END
+    
     if (fullpath.size() == 0)
     {
         return nullptr;
@@ -420,8 +540,307 @@ Texture2D * TextureCache::addImage(const std::string &path)
             image = new (std::nothrow) Image();
             CC_BREAK_IF(nullptr == image);
 
-            bool bRet = image->initWithImageFile(fullpath);
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// Was:
+//            bool bRet = image->initWithImageFile(fullpath);
+//            CC_BREAK_IF(!bRet);
+            
+#ifndef LINUX
+            bool bRet = image->initWithImageFile(fullpath, useAlpha);
             CC_BREAK_IF(!bRet);
+#else
+            string imageFileMd5;
+            do
+            {
+                FILE *imageFile = fopen(fullpath.c_str(), "rb");
+                if (!imageFile)
+                {
+                    CCLOG("Couldn't open the image file. [%s]", fullpath.c_str());
+                    break;
+                }
+                
+                fseek(imageFile, 0, SEEK_END);
+                long imageFileSize = ftell(imageFile);
+                rewind(imageFile);
+                
+                char *imageFileData = (char *) malloc(sizeof(char) * imageFileSize);
+                if (!imageFileData)
+                {
+                    CCLOG("Couldn't allocate memory for the image file.");
+                    fclose(imageFile);
+                    break;
+                }
+                
+                size_t result = fread(imageFileData, sizeof(char), imageFileSize, imageFile);
+                if (result != imageFileSize)
+                {
+                    CCLOG("Couldn't load the image file into memory.");
+                    fclose(imageFile);
+                    free(imageFileData);
+                    break;
+                }
+                
+                fclose(imageFile);
+                
+                MD5 md5;
+                md5.update(imageFileData, imageFileSize);
+                md5.finalize();
+                imageFileMd5 = md5.hexdigest();
+                
+                free(imageFileData);
+            } while (0);
+            
+            string decodedImageFilePath = fullpath + "_raw";
+            if (isAssetsFile)
+            {
+                decodedImageFilePath = FileUtils::getInstance()->getRawAssetsPath() + relPath + "_raw";
+            }
+            
+            struct flock fl = { F_RDLCK, SEEK_SET, 0, 0, 0 };
+            bool bRet = false;
+            bool decodedImageExists = false;
+            do
+            {
+                FILE *decodedImageFile = fopen(decodedImageFilePath.c_str(), "rb");
+                if (!decodedImageFile)
+                {
+                    CCLOG("Couldn't open the decoded image file. [%s]", decodedImageFilePath.c_str());
+                    break;
+                }
+                
+                fl.l_type = F_RDLCK;
+                fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                
+                fseek(decodedImageFile, 0, SEEK_END);
+                long decodedImageFileSize = ftell(decodedImageFile);
+                rewind(decodedImageFile);
+                
+                CCLOG("Decoded image file size: %ld", decodedImageFileSize);
+                
+                char *decodedImageFileData = (char *) malloc(sizeof(char) * decodedImageFileSize);
+                if (!decodedImageFileData)
+                {
+                    CCLOG("Couldn't allocate memory for the decoded image file.");
+                    
+                    fl.l_type = F_UNLCK;
+                    fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                    
+                    fclose(decodedImageFile);
+                    break;
+                }
+                
+                size_t result = fread(decodedImageFileData, sizeof(char), decodedImageFileSize, decodedImageFile);
+                if (result != decodedImageFileSize)
+                {
+                    CCLOG("Couldn't load the decoded image file into memory.");
+                    
+                    fl.l_type = F_UNLCK;
+                    fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                    
+                    fclose(decodedImageFile);
+                    free(decodedImageFileData);
+                    break;
+                }
+                
+                string imageManifestMd5;
+                string md5ManifestFilePath = FileUtils::getInstance()->getRawAssetsPath() + string("md5_manifest.json");
+                FILE *md5ManifestFile = fopen(md5ManifestFilePath.c_str(), "r");
+                if (md5ManifestFile)
+                {
+                    fl.l_type = F_RDLCK;
+                    fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                    
+                    fseek(md5ManifestFile, 0, SEEK_END);
+                    long md5ManifestFileSize = ftell(md5ManifestFile) + 1;
+                    rewind(md5ManifestFile);
+                    
+                    char md5ManifestJson[md5ManifestFileSize];
+                    if (fgets(md5ManifestJson, static_cast<int>(md5ManifestFileSize), md5ManifestFile))
+                    {
+                        rapidjson::Document doc;
+                        if (!doc.Parse<rapidjson::kParseDefaultFlags>(md5ManifestJson).HasParseError())
+                        {
+                            if (doc.HasMember(path.c_str()))
+                            {
+                                imageManifestMd5 = doc[path.c_str()].GetString();
+                            }
+                        }
+                        else
+                        {
+                            CCLOG("%s parse error: %s", md5ManifestFilePath.c_str(), doc.GetParseError());
+                            remove(md5ManifestFilePath.c_str());
+                        }
+                    }
+                    
+                    fl.l_type = F_UNLCK;
+                    fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                    
+                    fclose(md5ManifestFile);
+                }
+                
+                if (imageManifestMd5 != imageFileMd5)
+                {
+                    remove(decodedImageFilePath.c_str());
+                    
+                    fl.l_type = F_UNLCK;
+                    fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                    
+                    fclose(decodedImageFile);
+                    free(decodedImageFileData);
+                    break;
+                }
+                
+                fl.l_type = F_UNLCK;
+                fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                
+                fclose(decodedImageFile);
+                
+                DecodedImageHeader *decodedImageHeader = (DecodedImageHeader *) decodedImageFileData;
+                const char *decodedImageData = decodedImageFileData + sizeof(DecodedImageHeader);
+                bRet = image->initWithRawData(reinterpret_cast<const unsigned char *>(decodedImageData), strlen(decodedImageData), decodedImageHeader->width, decodedImageHeader->height, 8);
+                
+                free(decodedImageFileData);
+                decodedImageExists = true;
+            } while (0);
+            
+            if (!bRet)
+            {
+                bRet = image->initWithImageFile(fullpath, useAlpha);
+                CC_BREAK_IF(!bRet);
+            }
+            
+            if (!decodedImageExists)
+            {
+                DecodedImageHeader decodedImageHeader;
+                decodedImageHeader.width = (uint16_t) image->getWidth();
+                decodedImageHeader.height = (uint16_t) image->getHeight();
+                decodedImageHeader.version = (uint32_t) parentGarmentVersion;
+                
+                size_t decodedImageFileSize = image->getDataLen() + sizeof(DecodedImageHeader);
+                char *decodedImageFileData = (char *) malloc(decodedImageFileSize);
+                memset(decodedImageFileData, 0, decodedImageFileSize);
+                
+                char *writePtr = decodedImageFileData;
+                
+                memcpy(writePtr, &decodedImageHeader, sizeof(DecodedImageHeader));
+                writePtr += sizeof(DecodedImageHeader);
+                
+                memcpy(writePtr, reinterpret_cast<const char *>(image->getData()), image->getDataLen());
+                
+                bool decodedImageCreated = false;
+                do
+                {
+                    FileUtils::getInstance()->createDirectory(decodedImageFilePath.substr(0, decodedImageFilePath.rfind("/")));
+                    FILE *decodedImageFile = fopen(decodedImageFilePath.c_str(), "wb");
+                    if (!decodedImageFile)
+                    {
+                        CCLOG("Error creating file!");
+                        break;
+                    }
+                    
+                    fl.l_type = F_WRLCK;
+                    fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                    
+                    long bytesWritten = fwrite(decodedImageFileData, 1, decodedImageFileSize, decodedImageFile);
+                    
+                    fl.l_type = F_UNLCK;
+                    fcntl(fileno(decodedImageFile), F_SETLKW, &fl);
+                    
+                    fclose(decodedImageFile);
+                    
+                    if (bytesWritten != decodedImageFileSize)
+                    {
+                        CCLOG("failed to write all data!");
+                        break;
+                    }
+                    
+                    decodedImageCreated = true;
+                } while (0);
+                
+                free(decodedImageFileData);
+                
+                if (decodedImageCreated && !imageFileMd5.empty())
+                {
+                    do
+                    {
+                        string md5ManifestFilePath = FileUtils::getInstance()->getRawAssetsPath() + string("md5_manifest.json");
+                        FILE *md5ManifestFile = fopen(md5ManifestFilePath.c_str(), "r");
+                        if (md5ManifestFile)
+                        {
+                            fl.l_type = F_RDLCK;
+                            fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                            
+                            fseek(md5ManifestFile, 0, SEEK_END);
+                            long md5ManifestFileSize = ftell(md5ManifestFile) + 1;
+                            rewind(md5ManifestFile);
+                            
+                            char md5ManifestJson[md5ManifestFileSize];
+                            if (fgets(md5ManifestJson, static_cast<int>(md5ManifestFileSize), md5ManifestFile))
+                            {
+                                rapidjson::Document doc;
+                                if (!doc.Parse<rapidjson::kParseDefaultFlags>(md5ManifestJson).HasParseError())
+                                {
+                                    fl.l_type = F_UNLCK;
+                                    fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                                    
+                                    fclose(md5ManifestFile);
+                                    
+                                    if (doc.HasMember(path.c_str()))
+                                    {
+                                        doc.RemoveMember(path.c_str());
+                                    }
+                                    
+                                    doc.AddMember(path.c_str(), imageFileMd5.c_str(), doc.GetAllocator());
+                                    
+                                    md5ManifestFile = fopen(md5ManifestFilePath.c_str(), "w");
+                                    
+                                    fl.l_type = F_WRLCK;
+                                    fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                                    
+                                    rapidjson::StringBuffer buffer;
+                                    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                                    doc.Accept(writer);
+                                    
+                                    char *md5ManifestData = strdup(buffer.GetString());
+                                    fputs(md5ManifestData, md5ManifestFile);
+                                    free(md5ManifestData);
+                                }
+                                else
+                                {
+                                    CCLOG("%s parse error: %s", md5ManifestFilePath.c_str(), doc.GetParseError());
+                                    remove(md5ManifestFilePath.c_str());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            rapidjson::Document doc;
+                            doc.SetObject();
+                            doc.AddMember(path.c_str(), imageFileMd5.c_str(), doc.GetAllocator());
+                            
+                            md5ManifestFile = fopen(md5ManifestFilePath.c_str(), "w");
+                            
+                            fl.l_type = F_WRLCK;
+                            fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                            
+                            rapidjson::StringBuffer buffer;
+                            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                            doc.Accept(writer);
+                            
+                            char *md5ManifestData = strdup(buffer.GetString());
+                            fputs(md5ManifestData, md5ManifestFile);
+                            free(md5ManifestData);
+                        }
+                        
+                        fl.l_type = F_UNLCK;
+                        fcntl(fileno(md5ManifestFile), F_SETLKW, &fl);
+                        
+                        fclose(md5ManifestFile);
+                    } while (0);
+                }
+            }
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
             texture = new (std::nothrow) Texture2D();
 
@@ -596,6 +1015,13 @@ void TextureCache::removeTexture(Texture2D* texture)
 
     for (auto it = _textures.cbegin(); it != _textures.cend(); /* nothing */) {
         if (it->second == texture) {
+            
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+            _limboUnbindMutex.lock();
+            _limboUnbindFiles.erase(it->first);
+            _limboUnbindMutex.unlock();
+// CROWDSTAR_COCOSPATCH_END
+            
             it->second->release();
             it = _textures.erase(it);
             break;
@@ -616,6 +1042,13 @@ void TextureCache::removeTextureForKey(const std::string &textureKeyName)
     }
 
     if (it != _textures.end()) {
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+        _limboUnbindMutex.lock();
+        _limboUnbindFiles.erase(it->first);
+        _limboUnbindMutex.unlock();
+// CROWDSTAR_COCOSPATCH_END
+        
         it->second->release();
         _textures.erase(it);
     }
@@ -942,6 +1375,56 @@ void VolatileTextureMgr::reloadTexture(Texture2D* texture, const std::string& fi
 }
 
 #endif // CC_ENABLE_CACHE_TEXTURE_DATA
+
+// CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+unsigned int TextureCache::checkCachedTextureInfo()
+{
+    unsigned int count = 0;
+    unsigned int totalBytes = 0;
+    
+    for (auto element : _textures)
+    {
+        Texture2D* tex = element.second;
+        unsigned int bpp = tex->bitsPerPixelForFormat();
+        // Each texture takes up width * height * bytesPerPixel bytes.
+        unsigned int bytes = tex->getPixelsWide() * tex->getPixelsHigh() * bpp / 8;
+        totalBytes += bytes;
+        count++;
+    }
+    
+    CCLOG("cocos2d: CCTextureCache dumpDebugInfo: %ld textures, for %lu KB (%.2f MB)", (long)count, (long)totalBytes / 1024, totalBytes / (1024.0f*1024.0f));
+    
+    return totalBytes / (1024.0f*1024.0f);
+}
+
+
+
+void TextureCache::dumpCachedTextureInfo()
+{
+    unsigned int count = 0;
+    unsigned int totalBytes = 0;
+    
+    for (auto element : _textures)
+    {
+        Texture2D* tex = element.second;
+        unsigned int bpp = tex->bitsPerPixelForFormat();
+        // Each texture takes up width * height * bytesPerPixel bytes.
+        unsigned int bytes = tex->getPixelsWide() * tex->getPixelsHigh() * bpp / 8;
+        totalBytes += bytes;
+        count++;
+        CCLOG("cocos2d: \"%s\" rc=%lu id=%lu %lu x %lu @ %ld bpp => %lu KB",
+              element.first.c_str(),
+              (long)tex->getReferenceCount(),
+              (long)tex->getName(),
+              (long)tex->getPixelsWide(),
+              (long)tex->getPixelsHigh(),
+              (long)bpp,
+              (long)bytes / 1024);
+    }
+    
+    CCLOG("cocos2d: CCTextureCache dumpDebugInfo: %ld textures, for %lu KB (%.2f MB)", (long)count, (long)totalBytes / 1024, totalBytes / (1024.0f*1024.0f));
+}
+// CROWDSTAR_COCOSPATCH_END
 
 NS_CC_END
 

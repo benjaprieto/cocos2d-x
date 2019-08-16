@@ -28,7 +28,13 @@
 #include "base/CCData.h"
 #include "3d/CCBundle3DData.h"
 #include "3d/CCBundleReader.h"
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+// Was:
+//
+// #include "json/document-wrapper.h"
+//
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 
 NS_CC_BEGIN
 

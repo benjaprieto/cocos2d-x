@@ -39,6 +39,7 @@ NS_CC_BEGIN
  * @{
  */
 
+#define CC_DEFAULT_FONT_LABEL_SIZE  12
 
 /**
  * @struct TTFConfig
@@ -60,7 +61,7 @@ typedef struct _ttfConfig
     bool underline;
     bool strikethrough;
 
-    _ttfConfig(const std::string& filePath = "",float size = 12, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
+    _ttfConfig(const std::string& filePath = "",float size = CC_DEFAULT_FONT_LABEL_SIZE, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
         const char *customGlyphCollection = nullptr, bool useDistanceField = false, int outline = 0,
                bool useItalics = false, bool useBold = false, bool useUnderline = false, bool useStrikethrough = false)
         : fontFilePath(filePath)
@@ -612,6 +613,19 @@ CC_CONSTRUCTOR_ACCESS:
      * @lua NA
      */
     virtual ~Label();
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_LABEL_DEBUG_DRAW
+    /// @name DebugDraw
+    /// @{
+    static void enableDebugDraw(const bool value);
+    static bool getDebugDrawEnabled() { return _debugDrawEnabled; }
+    static void setDebugDrawColor(Color4F& color);
+    /// @}
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
     bool initWithTTF(const std::string& text, const std::string& fontFilePath, float fontSize,
                      const Size& dimensions = Size::ZERO, TextHAlignment hAlignment = TextHAlignment::LEFT,
@@ -676,8 +690,8 @@ protected:
     bool isHorizontalClamped(float letterPositionX, int lineIndex);
     void restoreFontSize();
     void updateLetterSpriteScale(Sprite* sprite);
-    int getFirstCharLen(const std::u32string& utf32Text, int startIndex, int textLen);
-    int getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen);
+    int getFirstCharLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
+    int getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
 
     void reset();
 
@@ -767,10 +781,16 @@ protected:
     EventListenerCustom* _purgeTextureListener;
     EventListenerCustom* _resetTextureListener;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_LABEL_DEBUG_DRAW
     DrawNode* _debugDrawNode;
+    static bool _debugDrawEnabled;
+    static Color4F _debugDrawColor;
 #endif
-
+// CROWDSTAR_COCOSPATCH_END
+    
     bool _enableWrap;
     float _bmFontSize;
     float _bmfontScale;

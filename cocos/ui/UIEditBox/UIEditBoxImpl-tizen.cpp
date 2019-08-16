@@ -443,6 +443,18 @@ void EditBoxImplTizen::closeKeyboard()
 
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+void EditBoxImplTizen::setNativeInputRestriction(int inputRestriction) 
+{ 
+    // not implemented yet     
+}
+
+void EditBoxImplTizen::setNativeUneditableTextLength(int uneditableTextLength) 
+{ 
+    // not implemented yet     
+} 
+// CROWDSTAR_COCOSPATCH_END
+
 }
 
 NS_CC_END

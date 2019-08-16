@@ -275,6 +275,29 @@ public:
      Built in shader for camera clear
      */
     static const char* SHADER_CAMERA_CLEAR;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(CrowdstarShaders)
+#ifdef ANDROID
+    static const char* SHADER_CROWDSTAR_GreenScreenDroid;
+#else
+    static const char* SHADER_CROWDSTAR_GreenScreen;
+    static const char* SHADER_CROWDSTAR_Mask;
+#endif
+
+    static const char* SHADER_CROWDSTAR_BlurEdge;
+    static const char* SHADER_CROWDSTAR_MaskiPhone4;
+    static const char* SHADER_CROWDSTAR_GreyToColorShader;
+    static const char* SHADER_CROWDSTAR_ColorToGreyShader;
+    static const char* SHADER_CROWDSTAR_ForegroundImgMaskShader;
+    static const char* SHADER_CROWDSTAR_CircleMaskShader;
+    static const char* SHADER_CROWDSTAR_TintShader;
+    static const char* SHADER_CROWDSTAR_RadShader;
+    static const char* SHADER_CROWDSTAR_GlowVertShader;
+    static const char* SHADER_CROWDSTAR_GlowHorizShader;
+    static const char* SHADER_CROWDSTAR_ScissorShader;
+    static const char* SHADER_CROWDSTAR_GlowSampler;
+// CROWDSTAR_COCOSPATCH_END
+    
     /**
     end of built shader types.
     @}

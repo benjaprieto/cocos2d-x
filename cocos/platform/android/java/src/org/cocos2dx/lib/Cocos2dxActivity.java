@@ -69,6 +69,11 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     private boolean hasFocus = false;
     private boolean showVirtualButton = false;
 
+    // CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
+    private boolean gainAudioFocus = false;
+    private boolean paused = true;
+    // CROWDSTAR_COCOSPATCH_END
+
     public Cocos2dxGLSurfaceView getGLSurfaceView(){
         return  mGLSurfaceView;
     }
@@ -91,6 +96,24 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         this.showVirtualButton = value;
     }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
+    public void setAudioFocusGain(boolean value) {
+        gainAudioFocus = value;
+    }
+
+    public void setEnableAudioFocusGain(boolean value) {
+        if(gainAudioFocus != value) {
+            if(!paused) {
+                if (value)
+                    Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
+                else
+                    Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
+            }
+            gainAudioFocus = value;
+        }
+    }
+// CROWDSTAR_COCOSPATCH_END
+
     protected void onLoadNativeLibraries() {
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
@@ -110,15 +133,19 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
+//  This block will cause OS 4.x devices to crash on launch!
+        //
         // Workaround in https://stackoverflow.com/questions/16283079/re-launch-of-activity-on-home-button-but-only-the-first-time/16447508
-        if (!isTaskRoot()) {
-            // Android launched another instance of the root activity into an existing task
-            //  so just quietly finish and go away, dropping the user back into the activity
-            //  at the top of the stack (ie: the last state of this task)
-            finish();
-            Log.w(TAG, "[Workaround] Ignore the activity started from icon!");
-            return;
-        }
+        // if (!isTaskRoot()) {
+        //     // Android launched another instance of the root activity into an existing task
+        //     //  so just quietly finish and go away, dropping the user back into the activity
+        //     //  at the top of the stack (ie: the last state of this task)
+        //     finish();
+        //     Log.w(TAG, "[Workaround] Ignore the activity started from icon!");
+        //     return;
+        // }
+// CROWDSTAR_COCOSPATCH_END
 
         this.hideVirtualButton();
 
@@ -166,11 +193,18 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
     @Override
     protected void onResume() {
-    	Log.d(TAG, "onResume()");
+        Log.d(TAG, "onResume()");
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
+        paused = false;
+// CROWDSTAR_COCOSPATCH_END
         super.onResume();
-        Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
+        if(gainAudioFocus)
+// CROWDSTAR_COCOSPATCH_END
+            Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
         this.hideVirtualButton();
-       	resumeIfHasFocus();
+        resumeIfHasFocus();
 
         Cocos2dxEngineDataManager.resume();
     }
@@ -194,9 +228,15 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
     @Override
     protected void onPause() {
-    	Log.d(TAG, "onPause()");
+        Log.d(TAG, "onPause()");
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
+        paused = true;
+// CROWDSTAR_COCOSPATCH_END
         super.onPause();
-        Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
+        if(gainAudioFocus)
+// CROWDSTAR_COCOSPATCH_END
+            Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
         Cocos2dxHelper.onPause();
         mGLSurfaceView.onPause();
         Cocos2dxEngineDataManager.pause();
@@ -204,7 +244,10 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     
     @Override
     protected void onDestroy() {
-        Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
+// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
+        if(gainAudioFocus)
+// CROWDSTAR_COCOSPATCH_END
+            Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
         super.onDestroy();
 
         Cocos2dxEngineDataManager.destroy();

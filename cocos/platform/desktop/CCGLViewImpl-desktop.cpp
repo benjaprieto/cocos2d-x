@@ -949,20 +949,29 @@ bool GLViewImpl::initGlew()
 
     if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader)
     {
-        log("Ready for GLSL");
+// CROWDSTAR_COCOSPATCH_BEGIN(Log2CCLOG)
+// Changed log to CCLOG
+        CCLOG("Ready for GLSL");
+// CROWDSTAR_COCOSPATCH_END
     }
     else
     {
-        log("Not totally ready :(");
+// CROWDSTAR_COCOSPATCH_BEGIN(Log2CCLOG)
+        CCLOG("Not totally ready :(");
+// CROWDSTAR_COCOSPATCH_END
     }
 
     if (glewIsSupported("GL_VERSION_2_0"))
     {
-        log("Ready for OpenGL 2.0");
+// CROWDSTAR_COCOSPATCH_BEGIN(Log2CCLOG)
+        CCLOG("Ready for OpenGL 2.0");
+// CROWDSTAR_COCOSPATCH_END
     }
     else
     {
-        log("OpenGL 2.0 not supported");
+// CROWDSTAR_COCOSPATCH_BEGIN(Log2CCLOG)
+        CCLOG("OpenGL 2.0 not supported");
+// CROWDSTAR_COCOSPATCH_END
     }
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

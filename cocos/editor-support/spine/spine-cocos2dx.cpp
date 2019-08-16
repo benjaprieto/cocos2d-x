@@ -73,7 +73,14 @@ void _spAtlasPage_createTexture (spAtlasPage* self, const char* path) {
 }
 
 void _spAtlasPage_disposeTexture (spAtlasPage* self) {
-	((Texture2D*)self->rendererObject)->release();
+// CROWDSTAR_COCOSPATCH_BEGIN(SpineFixes)
+// @todo [GMR.Ben] Document the reason after this change!
+// WAS:
+//
+//    if(self->rendererObject)
+//        ((Texture2D*)self->rendererObject)->release();
+//
+// CROWDSTAR_COCOSPATCH_END
 }
 
 char* _spUtil_readFile (const char* path, int* length) {

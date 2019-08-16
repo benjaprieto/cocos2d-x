@@ -31,6 +31,12 @@
 #include "base/CCDirector.h"
 #include "platform/CCFileUtils.h"
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ProxyProvider)
+#ifndef LINUX
+#include "ProxyProvider.h"
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 NS_CC_BEGIN
 
 namespace network {
@@ -268,8 +274,18 @@ public:
                 return false;
             }
         }
-
+// CROWDSTAR_COCOSPATCH_BEGIN(ProxyProvider)
+#ifndef LINUX
+        std::string proxyString = ProxyProvider::getInstance()->getProxyString(request->getUrl());
+#endif
+// CROWDSTAR_COCOSPATCH_END
+        
         return setOption(CURLOPT_URL, request->getUrl())
+// CROWDSTAR_COCOSPATCH_BEGIN(ProxyProvider)
+#ifndef LINUX
+        	&& setOption(CURLOPT_PROXY, proxyString.c_str())
+#endif
+// CROWDSTAR_COCOSPATCH_END
                 && setOption(CURLOPT_WRITEFUNCTION, callback)
                 && setOption(CURLOPT_WRITEDATA, stream)
                 && setOption(CURLOPT_HEADERFUNCTION, headerCallback)
@@ -402,6 +418,16 @@ HttpClient::HttpClient()
 , _threadCount(0)
 , _cookie(nullptr)
 , _requestSentinel(new HttpRequest())
+
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+, _clearRequestPredicate(nullptr)
+, _clearResponsePredicate(nullptr)
+// CROWDSTAR_COCOSPATCH_END
+
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
+, _latency_client(0)
+, _latency_server(0)
+// CROWDSTAR_COCOSPATCH_END
 {
     CCLOG("In the constructor of HttpClient!");
     memset(_responseMessage, 0, RESPONSE_BUFFER_SIZE * sizeof(char));
@@ -574,6 +600,41 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
         response->setSucceed(true);
     }
 }
+
+// CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
+void HttpClient::clearResponseAndRequestQueue()
+{
+    _requestQueueMutex.lock();
+    if (_requestQueue.size())
+    {
+        for (auto it = _requestQueue.begin(); it != _requestQueue.end();)
+        {
+            if(!_clearRequestPredicate ||
+               _clearRequestPredicate((*it)))
+            {
+                (*it)->release();
+                it =_requestQueue.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+    _requestQueueMutex.unlock();
+    
+    _responseQueueMutex.lock();
+    if (_clearResponsePredicate)
+    {
+        _responseQueue.erase(std::remove_if(_responseQueue.begin(), _responseQueue.end(), _clearResponsePredicate), _responseQueue.end());
+    }
+    else
+    {
+        _responseQueue.clear();
+    }
+    _responseQueueMutex.unlock();
+}
+// CROWDSTAR_COCOSPATCH_END
 
 void HttpClient::increaseThreadCount()
 {

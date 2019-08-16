@@ -31,7 +31,9 @@ THE SOFTWARE.
 #include "editor-support/cocostudio/DictionaryHelper.h"
 #include "editor-support/cocostudio/CocosStudioExport.h"
 
-#include "json/document-wrapper.h"
+// CROWDSTAR_COCOSPATCH_BEGIN(CCBundleJsonReference)
+#include "json/document.h"
+// CROWDSTAR_COCOSPATCH_END
 
 #include <string>
 #include <queue>

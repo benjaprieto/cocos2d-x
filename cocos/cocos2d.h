@@ -320,6 +320,10 @@ NS_CC_BEGIN
 
 CC_DLL const char* cocos2dVersion();
 
+// CROWDSTAR_COCOSPATCH_BEGIN(GetCPlusPlusVersion)
+CC_DLL const long cocos2dCPlusPlusVersion();
+// CROWDSTAR_COCOSPATCH_END
+
 NS_CC_END
 
 #endif // __COCOS2D_H__

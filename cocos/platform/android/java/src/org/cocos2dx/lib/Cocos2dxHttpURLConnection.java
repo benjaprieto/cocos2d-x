@@ -64,7 +64,9 @@ public class Cocos2dxHttpURLConnection
             url = new URL(linkURL);
             urlConnection = (HttpURLConnection) url.openConnection();
             //Accept-Encoding
-            urlConnection.setRequestProperty("Accept-Encoding", "identity");
+// CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionRemovedAcceptEncoding)
+//            urlConnection.setRequestProperty("Accept-Encoding", "identity");
+// CROWDSTAR_COCOSPATCH_END()
             urlConnection.setDoInput(true);
         } catch (Exception e) {
             Log.e("URLConnection exception", e.toString());

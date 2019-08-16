@@ -46,6 +46,17 @@
 
 NS_CC_BEGIN
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_LABEL_DEBUG_DRAW
+
+bool Label::_debugDrawEnabled = true;
+Color4F Label::_debugDrawColor = Color4F::WHITE;
+
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 /**
  * LabelLetter used to update the quad in texture atlas without SpriteBatchNode.
  */
@@ -390,10 +401,21 @@ Label::Label(TextHAlignment hAlignment /* = TextHAlignment::LEFT */,
     _hAlignment = hAlignment;
     _vAlignment = vAlignment;
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_LABEL_DEBUG_DRAW
-    _debugDrawNode = DrawNode::create();
-    addChild(_debugDrawNode);
+    if (Label::_debugDrawEnabled)
+    {
+        _debugDrawNode = DrawNode::create();
+        addChild(_debugDrawNode);
+    }
+    else
+    {
+        _debugDrawNode = nullptr;
+    }
 #endif
+// CROWDSTAR_COCOSPATCH_END
 
     _purgeTextureListener = EventListenerCustom::create(FontAtlas::CMD_PURGE_FONTATLAS, [this](EventCustom* event){
         if (_fontAtlas && _currentLabelType == LabelType::TTF && event->getUserData() == _fontAtlas)
@@ -449,6 +471,22 @@ Label::~Label()
     CC_SAFE_RELEASE_NULL(_shadowNode);
 }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
+#if CC_LABEL_DEBUG_DRAW
+void Label::enableDebugDraw(const bool value)
+{
+    Label::_debugDrawEnabled = value;
+}
+
+void Label::setDebugDrawColor(Color4F& color)
+{
+    Label::_debugDrawColor = color;
+}
+#endif
+// CROWDSTAR_COCOSPATCH_END
+
 void Label::reset()
 {
     CC_SAFE_RELEASE_NULL(_textSprite);
@@ -478,7 +516,7 @@ void Label::reset()
     _bmFontPath = "";
     _systemFontDirty = false;
     _systemFont = "Helvetica";
-    _systemFontSize = 12;
+    _systemFontSize = CC_DEFAULT_FONT_LABEL_SIZE;
 
     if (_horizontalKernings)
     {
@@ -1449,17 +1487,24 @@ void Label::updateContent()
         _contentDirty = false;
     }
 
+// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
+// [GMR.Ben] PATCH submitted in Cocos github, still not merged
+// https://github.com/cocos2d/cocos2d-x/pull/19347
 #if CC_LABEL_DEBUG_DRAW
-    _debugDrawNode->clear();
-    Vec2 vertices[4] =
+    if (Label::_debugDrawEnabled && _debugDrawNode)
     {
-        Vec2::ZERO,
-        Vec2(_contentSize.width, 0),
-        Vec2(_contentSize.width, _contentSize.height),
-        Vec2(0, _contentSize.height)
-    };
-    _debugDrawNode->drawPoly(vertices, 4, true, Color4F::WHITE);
+        _debugDrawNode->clear();
+        Vec2 vertices[4] =
+        {
+            Vec2::ZERO,
+            Vec2(_contentSize.width, 0),
+            Vec2(_contentSize.width, _contentSize.height),
+            Vec2(0, _contentSize.height)
+        };
+        _debugDrawNode->drawPoly(vertices, 4, true, Label::_debugDrawColor);
+    }
 #endif
+// CROWDSTAR_COCOSPATCH_END
 }
 
 void Label::setBMFontSize(float fontSize)

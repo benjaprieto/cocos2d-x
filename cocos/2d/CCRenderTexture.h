@@ -32,6 +32,12 @@ THE SOFTWARE.
 #include "renderer/CCGroupCommand.h"
 #include "renderer/CCCustomCommand.h"
 
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocRenderToTextureSaving)
+// The AdhocRenderToTextureSaving patch is used to override the way render to textures
+// are saved in COCOS, also allowing us to set a callback when saving
+#define CROWDSTAR_ADHOC_SAVE_RENDERTEXTURE
+// CROWDSTAR_COCOSPATCH_END
+
 NS_CC_BEGIN
 
 class EventCustom;
@@ -254,7 +260,12 @@ public:
      * @return A Sprite.
      */
     Sprite* getSprite() const { return _sprite; }
-    
+
+    // CROWDSTAR_COCOSPATCH_BEGIN(SpriteOthers)
+    // @todo [GMR.Ben] Commented method, needs to document why
+    // Sprite* getSprite(); // CROWD
+    // CROWDSTAR_COCOSPATCH_END
+
     /** Sets the Sprite being used. 
      *
      * @param sprite A Sprite.
@@ -367,6 +378,12 @@ protected:
     Mat4 _transformMatrix, _projectionMatrix;
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(RenderTexture);
+
+// CROWDSTAR_COCOSPATCH_BEGIN(AdhocRenderToTextureSaving)
+#ifdef CROWDSTAR_ADHOC_SAVE_RENDERTEXTURE
+    void crowdstarAdhocSaveToFile(const std::string& fileName, bool isRGBA);
+#endif
+// CROWDSTAR_COCOSPATCH_END
 
 };
 

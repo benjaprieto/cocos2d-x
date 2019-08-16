@@ -72,6 +72,11 @@ public:
     virtual void nativeOpenKeyboard() override;
     virtual void nativeCloseKeyboard() override;
     virtual void setNativeMaxLength(int maxLength) override;
+    
+// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
+    virtual void setNativeInputRestriction(int inputRestriction) override;
+    virtual void setNativeUneditableTextLength(int uneditableTextLength) override;
+// CROWDSTAR_COCOSPATCH_END
 
 private:
     NSFont*    constructFont(const char* fontName, int fontSize);
