@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -263,6 +264,7 @@ THE SOFTWARE.
 #ifndef CC_USE_3D_PHYSICS
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
 #define CC_USE_3D_PHYSICS 0
+
 #endif
 #endif
 
@@ -284,7 +286,7 @@ THE SOFTWARE.
 #endif
 
 /** Support PNG or not. If your application don't use png format picture, you can undefine this macro to save package size.
-*/
+ */
 #ifndef CC_USE_PNG
 #define CC_USE_PNG  1
 #endif // CC_USE_PNG
@@ -326,11 +328,10 @@ THE SOFTWARE.
 #endif
 
 /** When CC_ENABLE_SCRIPT_BINDING and CC_ENABLE_GC_FOR_NATIVE_OBJECTS are both 1
- then the Garbage collector will release the native objects, only when the JS/Lua objects
- are collected.
- The benefit is that users don't need to retain/release the JS/Lua objects manually.
-
- By default this behavior is disabled by default
+ * then the Garbage collector will release the native objects, only when the JS/Lua objects
+ * are collected.
+ * The benefit is that users don't need to retain/release the JS/Lua objects manually.
+ * Disabled by default.
  */
 #ifdef CC_ENABLE_SCRIPT_BINDING
   #ifndef CC_ENABLE_GC_FOR_NATIVE_OBJECTS

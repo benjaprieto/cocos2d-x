@@ -1,3 +1,27 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
 #include "UIRichTextTest.h"
 #include "editor-support/cocostudio/CCArmatureDataManager.h"
 #include "editor-support/cocostudio/CCArmature.h"
@@ -915,7 +939,7 @@ bool UIRichTextXMLUrl::init()
 		_widget->addChild(button3);
 
         // RichText
-        _richText = RichText::createWithXML("And this link will redirect you togoogle: <a href='http://www.google.com'>click me</a>");
+        _richText = RichText::createWithXML("This link will redirect you to google: <a href='http://www.google.com'>click me</a>");
         _richText->ignoreContentAdaptWithSize(false);
         _richText->setContentSize(Size(100, 100));
 
@@ -1016,7 +1040,7 @@ bool UIRichTextXMLUrlImg::init()
 		_widget->addChild(button3);
         
         // RichText
-        _richText = RichText::createWithXML("And this link will redirect you to google: <a href='http://www.google.com'><img src=\"cocosui/ccicon.png\" height=\"48\" width=\"48\" /></a>");
+        _richText = RichText::createWithXML("This link will redirect you to google: <a href='http://www.google.com'><img src=\"cocosui/ccicon.png\" height=\"48\" width=\"48\" /></a>");
         _richText->ignoreContentAdaptWithSize(false);
         _richText->setContentSize(Size(100, 100));
         
@@ -1119,7 +1143,7 @@ bool UIRichTextXMLFace::init()
         // RichText
         _richText = RichText::createWithXML("<font size='20' face='fonts/Marker Felt.ttf'>Marker Felt 20.<font face='fonts/arial.ttf'>Arial 20.</font></font><font face='font/Thonburi.ttf' size='24' color='#0000ff'>Thonburi 24 blue</font>");
         _richText->ignoreContentAdaptWithSize(false);
-        _richText->setContentSize(Size(100, 100));
+        _richText->setContentSize(Size(120, 100));
 
         _richText->setPosition(Vec2(widgetSize.width / 2, widgetSize.height / 2));
         _richText->setLocalZOrder(10);

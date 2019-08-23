@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -83,4 +84,14 @@ public:
     cocos2d::ui::EditBox* _editbox2;
 };
 // CROWDSTAR_COCOSPATCH_END
+
+class UIEditBoxTestTextHorizontalAlignment : public UIScene
+{
+public:
+    CREATE_FUNC(UIEditBoxTestTextHorizontalAlignment);
+    
+    virtual bool init() override;
+};
+
+
 #endif /* defined(__cocos2d_tests__UIEditBoxTest__) */
