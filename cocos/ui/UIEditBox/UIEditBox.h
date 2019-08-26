@@ -346,8 +346,27 @@ namespace ui {
          * @return The text entered in the edit box.
          */
         const char* getText() const;
+        
+        /**
+         * Set the font. Only system font is allowed.
+         * @param pFontName The font name.
+         * @param fontSize The font size.
+         */
+        void setFont(const char* pFontName, int fontSize);
+        
+        /**
+         * Set the font name. Only system font is allowed.
+         * @param pFontName The font name.
+         */
+        void setFontName(const char* pFontName);
+        
+        /**
+         * Get the font name.
+         * @return The font name.
+         */
         const char* getFontName() const;
 
+        /**
          * Set the font size.
          * @param fontSize The font size.
          */

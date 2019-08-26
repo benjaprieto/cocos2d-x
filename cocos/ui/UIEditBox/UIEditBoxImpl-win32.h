@@ -101,7 +101,3 @@ NS_CC_END
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) */
 
 #endif /* __UIEditBoxIMPLWIN_H__ */
-<<<<<<< HEAD
-=======
-
->>>>>>> cocos2d-x-3.17
