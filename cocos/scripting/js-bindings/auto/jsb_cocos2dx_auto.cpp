@@ -8149,6 +8149,24 @@ bool js_cocos2dx_Director_getAnimationInterval(JSContext *cx, uint32_t argc, jsv
     JS_ReportError(cx, "js_cocos2dx_Director_getAnimationInterval : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_Director_getClearColor(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::Director* cobj = (cocos2d::Director *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_Director_getClearColor : Invalid Native Object");
+    if (argc == 0) {
+        const cocos2d::Color4F& ret = cobj->getClearColor();
+        JS::RootedValue jsret(cx);
+        jsret = cccolor4f_to_jsval(cx, ret);
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_Director_getClearColor : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_Director_isPaused(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -8377,6 +8395,7 @@ void js_register_cocos2dx_Director(JSContext *cx, JS::HandleObject global) {
         JS_FN("getScheduler", js_cocos2dx_Director_getScheduler, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("pushScene", js_cocos2dx_Director_pushScene, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getAnimationInterval", js_cocos2dx_Director_getAnimationInterval, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getClearColor", js_cocos2dx_Director_getClearColor, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("isPaused", js_cocos2dx_Director_isPaused, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setDisplayStats", js_cocos2dx_Director_setDisplayStats, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getEventDispatcher", js_cocos2dx_Director_getEventDispatcher, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -9800,6 +9819,22 @@ bool js_cocos2dx_Image_hasPremultipliedAlpha(JSContext *cx, uint32_t argc, jsval
     JS_ReportError(cx, "js_cocos2dx_Image_hasPremultipliedAlpha : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_Image_reversePremultipliedAlpha(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::Image* cobj = (cocos2d::Image *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_Image_reversePremultipliedAlpha : Invalid Native Object");
+    if (argc == 0) {
+        cobj->reversePremultipliedAlpha();
+        args.rval().setUndefined();
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_Image_reversePremultipliedAlpha : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_Image_getDataLen(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -9904,6 +9939,22 @@ bool js_cocos2dx_Image_getHeight(JSContext *cx, uint32_t argc, jsval *vp)
     }
 
     JS_ReportError(cx, "js_cocos2dx_Image_getHeight : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
+bool js_cocos2dx_Image_premultiplyAlpha(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::Image* cobj = (cocos2d::Image *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_Image_premultiplyAlpha : Invalid Native Object");
+    if (argc == 0) {
+        cobj->premultiplyAlpha();
+        args.rval().setUndefined();
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_Image_premultiplyAlpha : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_Image_initWithImageFile(JSContext *cx, uint32_t argc, jsval *vp)
@@ -10191,11 +10242,13 @@ void js_register_cocos2dx_Image(JSContext *cx, JS::HandleObject global) {
 
     static JSFunctionSpec funcs[] = {
         JS_FN("hasPremultipliedAlpha", js_cocos2dx_Image_hasPremultipliedAlpha, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("reversePremultipliedAlpha", js_cocos2dx_Image_reversePremultipliedAlpha, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getDataLen", js_cocos2dx_Image_getDataLen, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("saveToFile", js_cocos2dx_Image_saveToFile, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("hasAlpha", js_cocos2dx_Image_hasAlpha, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("isCompressed", js_cocos2dx_Image_isCompressed, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getHeight", js_cocos2dx_Image_getHeight, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("premultiplyAlpha", js_cocos2dx_Image_premultiplyAlpha, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("initWithImageFile", js_cocos2dx_Image_initWithImageFile, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getWidth", js_cocos2dx_Image_getWidth, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getBitPerPixel", js_cocos2dx_Image_getBitPerPixel, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -17897,6 +17950,24 @@ bool js_cocos2dx_Configuration_supportsMapBuffer(JSContext *cx, uint32_t argc, j
     JS_ReportError(cx, "js_cocos2dx_Configuration_supportsMapBuffer : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_Configuration_getInfoAsMap(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::Configuration* cobj = (cocos2d::Configuration *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_Configuration_getInfoAsMap : Invalid Native Object");
+    if (argc == 0) {
+        const cocos2d::ValueMap& ret = cobj->getInfoAsMap();
+        JS::RootedValue jsret(cx);
+        jsret = ccvaluemap_to_jsval(cx, ret);
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_Configuration_getInfoAsMap : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_Configuration_destroyInstance(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -17967,6 +18038,7 @@ void js_register_cocos2dx_Configuration(JSContext *cx, JS::HandleObject global) 
         JS_FN("getValue", js_cocos2dx_Configuration_getValue, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("gatherGPUInfo", js_cocos2dx_Configuration_gatherGPUInfo, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("supportsMapBuffer", js_cocos2dx_Configuration_supportsMapBuffer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getInfoAsMap", js_cocos2dx_Configuration_getInfoAsMap, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
     };
 

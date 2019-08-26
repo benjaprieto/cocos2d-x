@@ -71,8 +71,6 @@ FontAtlas::FontAtlas(Font &theFont)
         {
             _letterPadding += 2 * FontFreeType::DistanceMapSpread;    
         }
-        
-        reinit();
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA
         auto eventDispatcher = Director::getInstance()->getEventDispatcher();
@@ -343,7 +341,10 @@ bool FontAtlas::prepareLetterDefinitions(const std::u32string& utf32Text)
     {
         return false;
     } 
-    
+ 
+    if (!_currentPageData)
+        reinit();     
+ 
     std::unordered_map<unsigned int, unsigned int> codeMapOfNewChar;
     findNewCharacters(utf32Text, codeMapOfNewChar);
     if (codeMapOfNewChar.empty())
@@ -432,8 +433,7 @@ bool FontAtlas::prepareLetterDefinitions(const std::u32string& utf32Text)
             tempDef.V = tempDef.V / scaleFactor;
         }
         else{
-            if(bitmap)
-                delete[] bitmap;
+            delete[] bitmap;
             if (tempDef.xAdvance)
                 tempDef.validDefinition = true;
             else
@@ -486,9 +486,9 @@ std::string FontAtlas::getFontName() const
 {
     std::string fontName = _fontFreeType ? _fontFreeType->getFontName() : "";
     if(fontName.empty()) return fontName;
-    auto idx = fontName.rfind("/");
+    auto idx = fontName.rfind('/');
     if (idx != std::string::npos) { return fontName.substr(idx + 1); }
-    idx = fontName.rfind("\\");
+    idx = fontName.rfind('\\');
     if (idx != std::string::npos) { return fontName.substr(idx + 1); }
     return fontName;
 }
