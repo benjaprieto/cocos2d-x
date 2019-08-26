@@ -76,7 +76,10 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #import "platform/ios/OpenGL_Internal-ios.h"
 
 // CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
+// @TODO [GMR.Bprieto] This should be removed ASAP! we are cross referencing!
+#ifdef CROWDSTAR_TEXT_VIEW
 #import "../../../../proj.ios_mac/ios/CustomTextView.h"
+#endif
 // CROWDSTAR_COCOSPATCH_END
 
 //CLASS IMPLEMENTATIONS:
@@ -396,10 +399,15 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 //        if([view isKindOfClass:NSClassFromString(@"UITextView")] ||
 //           [view isKindOfClass:NSClassFromString(@"UITextField")])
 //
+#ifndef CROWDSTAR_TEXT_VIEW
+        if([view isKindOfClass:NSClassFromString(@"UITextView")] ||
+            [view isKindOfClass:NSClassFromString(@"UITextField")])
+#else
         const BOOL isSingleLine = [view isKindOfClass:NSClassFromString(@"CCUISingleLineTextField")];
         const BOOL isUITextView = [view isKindOfClass:NSClassFromString(@"UITextView")];
         
         if(isSingleLine || (isUITextView && view.tag == CustomTextViewType_AllowGLTouch))
+#endif
 // CROWDSTAR_COCOSPATCH_END
         {
             if ([view isFirstResponder])
