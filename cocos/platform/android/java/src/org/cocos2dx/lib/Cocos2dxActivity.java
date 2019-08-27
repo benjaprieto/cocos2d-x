@@ -25,6 +25,7 @@ THE SOFTWARE.
 package org.cocos2dx.lib;
 
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -35,6 +36,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.PowerManager;
 import android.preference.PreferenceManager.OnActivityResultListener;
 import android.util.Log;
 import android.view.View;
@@ -69,6 +71,8 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     private Cocos2dxEditBoxHelper mEditBoxHelper = null;
     private boolean hasFocus = false;
     private boolean showVirtualButton = false;
+    private boolean gainAudioFocus = false;
+    private boolean paused = true;
 
     // CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
     private boolean gainAudioFocus = false;
@@ -97,10 +101,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         this.showVirtualButton = value;
     }
 
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
-    public void setAudioFocusGain(boolean value) {
-        gainAudioFocus = value;
-    }
 
     public void setEnableAudioFocusGain(boolean value) {
         if(gainAudioFocus != value) {
@@ -113,7 +113,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
             gainAudioFocus = value;
         }
     }
-// CROWDSTAR_COCOSPATCH_END
 
     protected void onLoadNativeLibraries() {
         try {
@@ -194,15 +193,10 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume()");
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
+    	Log.d(TAG, "onResume()");
         paused = false;
-// CROWDSTAR_COCOSPATCH_END
         super.onResume();
-
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioGainPause)
         if(gainAudioFocus)
-// CROWDSTAR_COCOSPATCH_END
             Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
         this.hideVirtualButton();
         resumeIfHasFocus();
@@ -220,7 +214,11 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     }
     
     private void resumeIfHasFocus() {
-        if(hasFocus) {
+        //It is possible for the app to receive the onWindowsFocusChanged(true) event
+        //even though it is locked or asleep
+        boolean readyToPlay = !isDeviceLocked() && !isDeviceAsleep();
+
+        if(hasFocus && readyToPlay) {
             this.hideVirtualButton();
         	Cocos2dxHelper.onResume();
         	mGLSurfaceView.onResume();
@@ -229,14 +227,10 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause()");
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
+    	Log.d(TAG, "onPause()");
         paused = true;
-// CROWDSTAR_COCOSPATCH_END
         super.onPause();
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
         if(gainAudioFocus)
-// CROWDSTAR_COCOSPATCH_END
             Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
         Cocos2dxHelper.onPause();
         mGLSurfaceView.onPause();
@@ -245,9 +239,7 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     
     @Override
     protected void onDestroy() {
-// CROWDSTAR_COCOSPATCH_BEGIN(CocosAudioOnCreateFix)
         if(gainAudioFocus)
-// CROWDSTAR_COCOSPATCH_END
             Cocos2dxAudioFocusManager.unregisterAudioFocusListener(this);
         super.onDestroy();
 
@@ -382,6 +374,24 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
       return isEmulator;
    }
 
+    private static boolean isDeviceLocked() {
+        KeyguardManager keyguardManager = (KeyguardManager)getContext().getSystemService(Context.KEYGUARD_SERVICE);
+        boolean locked = keyguardManager.inKeyguardRestrictedInputMode();
+        return locked;
+    }
+
+    private static boolean isDeviceAsleep() {
+        PowerManager powerManager = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
+        if(powerManager == null) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            return !powerManager.isInteractive();
+        } else {
+            return !powerManager.isScreenOn();
+        }
+    }
+    
     // ===========================================================
     // Inner and Anonymous Classes
     // ===========================================================

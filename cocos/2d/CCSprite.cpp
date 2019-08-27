@@ -318,24 +318,18 @@ bool Sprite::initWithTexture(Texture2D *texture, const Rect& rect, bool rotated)
 }
 
 Sprite::Sprite()
-// CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)
-// Was:
-// : _batchNode(nullptr)
-// , _textureAtlas(nullptr)
-// Changed to : 
 : _textureAtlas(nullptr)
 , _batchNode(nullptr)
-// CROWDSTAR_COCOSPATCH_END
 , _shouldBeHidden(false)
 , _texture(nullptr)
 , _spriteFrame(nullptr)
-, _insideBounds(true)
 , _centerRectNormalized(0,0,1,1)
 , _renderMode(Sprite::RenderMode::QUAD)
-, _trianglesVertex(nullptr)
-, _trianglesIndex(nullptr)
 , _stretchFactor(Vec2::ONE)
 , _originalContentSize(Size::ZERO)
+, _trianglesVertex(nullptr)
+, _trianglesIndex(nullptr)
+, _insideBounds(true)
 , _stretchEnabled(true)
 {
 // CROWDSTAR_COCOSPATCH_BEGIN(ToggleLabelsAndSpriteDebugRendering)

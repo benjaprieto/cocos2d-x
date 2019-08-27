@@ -172,7 +172,7 @@ public final class Cocos2dxBitmap {
 
     public static boolean createTextBitmapShadowStroke(byte[] bytes,  final String fontName, int fontSize,
                                                     int fontTintR, int fontTintG, int fontTintB, int fontTintA,
-                                                    int alignment, int width, int height, 
+                                                    int alignment, int width, int height, float lineSpacing,
                                                     boolean shadow, float shadowDX, float shadowDY, float shadowBlur, float shadowOpacity, 
                                                     boolean stroke, int strokeR, int strokeG, int strokeB, int strokeA, float strokeSize, boolean enableWrap, int overflow) {
         String string;
@@ -351,7 +351,8 @@ public final class Cocos2dxBitmap {
         if (overflow == 1 && !enableWrap){
             int widthBoundary = (int)Math.ceil( StaticLayout.getDesiredWidth(string, paint));
 // CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
-// Changed string to attribString
+// IN V 3.17.1 is:
+//          layout = new StaticLayout(string, paint, widthBoundary, hAlignment, 1.0f, lineSpacing, false);
             layout = new StaticLayout(attribString, paint, widthBoundary , hAlignment,1.0f,0.0f,false);
 // CROWDSTAR_COCOSPATCH_END
         }else {
@@ -359,7 +360,8 @@ public final class Cocos2dxBitmap {
                 calculateShrinkTypeFace(string, width, height, hAlignment, fontSize, paint, enableWrap);
             }
 // CROWDSTAR_COCOSPATCH_BEGIN(BitmapShadowTags)
-// Changed string to attribString
+// In V3.17.1 was:
+//          layout = new StaticLayout(string, paint, maxWidth, hAlignment, 1.0f, lineSpacing, false);
             layout = new StaticLayout(attribString, paint, maxWidth , hAlignment,1.0f,0.0f,false);
 // CROWDSTAR_COCOSPATCH_END
         }

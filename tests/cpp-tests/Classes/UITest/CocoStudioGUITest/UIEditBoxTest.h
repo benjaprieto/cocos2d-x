@@ -93,5 +93,11 @@ public:
     virtual bool init() override;
 };
 
+class UIEditBoxTestPressedAndDisabled : public UIScene
+{
+public:
+    CREATE_FUNC(UIEditBoxTestPressedAndDisabled);
+    virtual bool init() override;
+};
 
 #endif /* defined(__cocos2d_tests__UIEditBoxTest__) */

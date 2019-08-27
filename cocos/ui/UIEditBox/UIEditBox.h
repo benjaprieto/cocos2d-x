@@ -29,7 +29,7 @@
 
 #include "base/CCIMEDelegate.h"
 #include "ui/GUIDefine.h"
-#include "ui/UIButton.h"
+#include "ui/UIWidget.h"
 #include "ui/UIScale9Sprite.h"
 
 NS_CC_BEGIN
@@ -70,21 +70,33 @@ namespace ui {
          * This method is called when an edit box gains focus after keyboard is shown.
          * @param editBox The edit box object that generated the event.
          */
+<<<<<<< HEAD
         virtual void editBoxEditingDidBegin(EditBox* editBox) {}
+=======
+        virtual void editBoxEditingDidBegin(EditBox* /*editBox*/) {}
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when an edit box loses focus after keyboard is hidden.
          * @param editBox The edit box object that generated the event.
          * @deprecated Use editBoxEditingDidEndWithAction() instead to receive reason for end
          */
+<<<<<<< HEAD
         CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* editBox) {}
+=======
+        CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* /*editBox*/) {}
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when the edit box text was changed.
          * @param editBox The edit box object that generated the event.
          * @param text The new text.
          */
+<<<<<<< HEAD
         virtual void editBoxTextChanged(EditBox* editBox, const std::string& text) {}
+=======
+        virtual void editBoxTextChanged(EditBox* /*editBox*/, const std::string& /*text*/) {}
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when the return button was pressed or the outside area of keyboard was touched.
@@ -97,7 +109,8 @@ namespace ui {
          * @param editBox The edit box object that generated the event.
          * @param type The reason why editing ended.
          */
-        virtual void editBoxEditingDidEndWithAction(EditBox* editBox, EditBoxEndAction action) {}
+        virtual void editBoxEditingDidEndWithAction(EditBox* /*editBox*/, EditBoxEndAction /*action*/) {}
+
 		
 // CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
 // @todo GMR.Ben Remove editBoxShouldTextChange
@@ -129,6 +142,7 @@ namespace ui {
             GO,
             NEXT
         };
+<<<<<<< HEAD
         
 // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
         /**
@@ -142,6 +156,8 @@ namespace ui {
             PUNCT = 1 << 4
         };
 // CROWDSTAR_COCOSPATCH_END
+=======
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * @brief The EditBox::InputMode defines the type of text that the user is allowed
@@ -237,13 +253,26 @@ namespace ui {
                                Scale9Sprite* pressedSprite = nullptr,
                                Scale9Sprite* disabledSprite = nullptr);
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
+        /**
+         * create a edit box with size.
+         * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
+         */
+        static EditBox* create(const Size& size,
+                               const std::string& normalImage,
+                               TextureResType texType);
 
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
          */
         static EditBox* create(const Size& size,
-                               const std::string& normal9SpriteBg,
+                               const std::string& normalImage,
+                               const std::string& pressedImage = "",
+                               const std::string& disabledImage = "",
                                TextureResType texType = TextureResType::LOCAL);
 
         /**
@@ -259,7 +288,7 @@ namespace ui {
          * @lua NA
          */
         virtual ~EditBox();
-            
+
         /**
          * Init edit box with specified size. This method should be invoked right after constructor.
          * @param size The size of edit box.
@@ -278,6 +307,113 @@ namespace ui {
          * @return Whether initialization is successfully or not.
          */
         bool initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* normal9SpriteBg);
+
+        /**
+         * Init edit box with specified size. This method should be invoked right after constructor.
+         * @param size The size of edit box.
+         * @param normalSprite  normal state image of edit box.
+         * @param pressedSprite  pressed state image of edit box.
+         * @param disabledSprite  disabled state image of edit box.
+         * @return Whether initialization is successfully or not.
+         */
+        bool initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* normalSprite, Scale9Sprite* pressedSprite, Scale9Sprite* disabledSprite);
+
+        /**
+         * Init edit box with specified size. This method should be invoked right after constructor.
+         * @param size The size of edit box.
+         * @param normalImage  normal state texture name.
+         * @param pressedImage  pressed state texture name.
+         * @param disabledImage  disabled state texture name.
+         * @return Whether initialization is successfully or not.
+         */
+        bool initWithSizeAndTexture(const Size& size,
+                                    const std::string& normalImage,
+                                    const std::string& pressedImage = "",
+                                    const std::string& disabledImage = "",
+                                    TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load textures for edit box.
+         *
+         * @param normal    normal state texture name.
+         * @param pressed    pressed state texture name.
+         * @param disabled    disabled state texture name.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextures(const std::string& normal,
+                          const std::string& pressed,
+                          const std::string& disabled = "",
+                          TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load normal state texture for edit box.
+         *
+         * @param normal    normal state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextureNormal(const std::string& normal, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load pressed state texture for edit box.
+         *
+         * @param pressed    pressed state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTexturePressed(const std::string& pressed, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load disabled state texture for edit box.
+         *
+         * @param disabled    dark state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextureDisabled(const std::string& disabled, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Sets capInsets for edit box.
+         *
+         * @param capInsets    capInset in Rect.
+         */
+        void setCapInsets(const Rect &capInsets);
+
+        /**
+         * Sets capInsets for edit box, only the normal state scale9 renderer will be affected.
+         *
+         * @param capInsets    capInsets in Rect.
+         */
+        void setCapInsetsNormalRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of normal state scale9sprite.
+         * @return The normal scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsNormalRenderer() const;
+
+        /**
+         * Sets capInsets for edit box, only the pressed state scale9 renderer will be affected.
+         *
+         * @param capInsets    capInsets in Rect
+         */
+        void setCapInsetsPressedRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of pressed state scale9sprite.
+         * @return The pressed scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsPressedRenderer() const;
+
+        /**
+         * Sets capInsets for edit box, only the disabled state scale9 renderer will be affected.
+         *
+         * @param capInsets  capInsets in Rect.
+         */
+        void setCapInsetsDisabledRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of disabled state scale9sprite.
+         * @return The disabled scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsDisabledRenderer() const;
 
         /**
          * Gets/Sets the delegate for edit box.
@@ -332,7 +468,7 @@ namespace ui {
          * @lua NA
          */
         int  getScriptEditBoxHandler(){ return _scriptEditBoxHandler ;}
-            
+
 #endif // #if CC_ENABLE_SCRIPT_BINDING
 
         /**
@@ -346,14 +482,22 @@ namespace ui {
          * @return The text entered in the edit box.
          */
         const char* getText() const;
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         /**
          * Set the font. Only system font is allowed.
          * @param pFontName The font name.
          * @param fontSize The font size.
          */
         void setFont(const char* pFontName, int fontSize);
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         /**
          * Set the font name. Only system font is allowed.
          * @param pFontName The font name.
@@ -557,12 +701,19 @@ namespace ui {
          */
         virtual void keyboardDidHide(IMEKeyboardNotificationInfo& info) override;
 
+<<<<<<< HEAD
         /* callback functions
+=======
+        /**
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
          * @js NA
          * @lua NA
+         * @deprecated Use openKeyboard() instead to open the keyboard
          */
+        CC_DEPRECATED_ATTRIBUTE
         void touchDownAction(Ref *sender, TouchEventType controlEvent);
 
+<<<<<<< HEAD
 // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxOpenKeyboard)
         void openKeyboard() const;
 // CROWDSTAR_COCOSPATCH_END
@@ -581,15 +732,63 @@ namespace ui {
          */
         void setUneditableTextLength(int uneditableTextLength);
 // CROWDSTAR_COCOSPATCH_END
+=======
+        void openKeyboard() const;
+>>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
     protected:
+        virtual void releaseUpEvent() override;
+
+        virtual void initRenderer() override;
+        virtual void onPressStateChangedToNormal() override;
+        virtual void onPressStateChangedToPressed() override;
+        virtual void onPressStateChangedToDisabled() override;
+        virtual void onSizeChanged() override;
+
+        void loadTextureNormal(SpriteFrame* normalSpriteFrame);
+        void setupNormalTexture(bool textureLoaded);
+        void loadTexturePressed(SpriteFrame* pressedSpriteFrame);
+        void setupPressedTexture(bool textureLoaded);
+        void loadTextureDisabled(SpriteFrame* disabledSpriteFrame);
+        void setupDisabledTexture(bool textureLoaded);
+
+        void normalTextureScaleChangedWithSize();
+        void pressedTextureScaleChangedWithSize();
+        void disabledTextureScaleChangedWithSize();
+
         virtual void adaptRenderers() override;
 
+    protected:
         void updatePosition(float dt);
+
+        Scale9Sprite* _normalRenderer;
+        Scale9Sprite* _pressedRenderer;
+        Scale9Sprite* _disabledRenderer;
+
+        Rect _capInsetsNormal;
+        Rect _capInsetsPressed;
+        Rect _capInsetsDisabled;
+
+        Size _normalTextureSize;
+        Size _pressedTextureSize;
+        Size _disabledTextureSize;
+
+        bool _normalTextureLoaded;
+        bool _pressedTextureLoaded;
+        bool _disabledTextureLoaded;
+        bool _normalTextureAdaptDirty;
+        bool _pressedTextureAdaptDirty;
+        bool _disabledTextureAdaptDirty;
+
+        std::string _normalFileName;
+        std::string _pressedFileName;
+        std::string _disabledFileName;
+        TextureResType _normalTexType;
+        TextureResType _pressedTexType;
+        TextureResType _disabledTexType;
+
         EditBoxImpl*      _editBoxImpl;
         EditBoxDelegate*  _delegate;
-
-        Scale9Sprite *_backgroundSprite;
 
         float _adjustHeight;
 #if CC_ENABLE_SCRIPT_BINDING
