@@ -151,11 +151,12 @@ public:
      * @since v3.1
      */
 // CROWDSTAR_COCOSPATCH_BEGIN(Texture2DExtensions)
+// @todo [gmr.ben] Review change, can't really find where it is used (add target)
 // Replaced:
 //
 // virtual void unbindImageAsync(const std::string &filename);
 //
-    virtual void unbindImageAsync(const std::string &filename, Ref* target);
+    virtual void unbindImageAsync(const std::string &filename, Ref* target = nullptr);
  // CROWDSTAR_COCOSPATCH_END
     
     /** Unbind all bound image asynchronous load callbacks.

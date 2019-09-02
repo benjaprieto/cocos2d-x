@@ -102,7 +102,10 @@ namespace ui {
 		
 // CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
 // @todo GMR.Ben Remove editBoxShouldTextChange
-        virtual bool editBoxShouldTextChange(std::string text) = 0;
+        virtual bool editBoxShouldTextChange(std::string text)
+        {
+            return true;
+        };
 // CROWDSTAR_COCOSPATCH_END
     };
 
