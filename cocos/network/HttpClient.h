@@ -150,7 +150,7 @@ public:
     std::mutex& getCookieFileMutex() {return _cookieFileMutex;}
 
     std::mutex& getSSLCaFileMutex() {return _sslCaFileMutex;}
-    
+
 // CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
     typedef std::function<bool(HttpRequest*)> ClearRequestPredicate;
     typedef std::function<bool(HttpResponse*)> ClearResponsePredicate;
@@ -194,7 +194,7 @@ public:
         _latency_server = server;
     }
 // CROWDSTAR_COCOSPATCH_END
-        
+
 private:
     HttpClient();
     virtual ~HttpClient();
@@ -216,12 +216,12 @@ private:
 
 private:
     bool _isInited;
-    
+
     // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)    
     long _latency_client;
     long _latency_server;
     // CROWDSTAR_COCOSPATCH_END
-    
+
     int _timeoutForConnect;
     std::mutex _timeoutForConnectMutex;
 
@@ -253,7 +253,7 @@ private:
     char _responseMessage[RESPONSE_BUFFER_SIZE];
 
     HttpRequest* _requestSentinel;
-    
+
 // CROWDSTAR_COCOSPATCH_BEGIN(patchNetworkClearRequest)
     ClearRequestPredicate _clearRequestPredicate;
     ClearResponsePredicate _clearResponsePredicate;

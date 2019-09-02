@@ -70,33 +70,21 @@ namespace ui {
          * This method is called when an edit box gains focus after keyboard is shown.
          * @param editBox The edit box object that generated the event.
          */
-<<<<<<< HEAD
-        virtual void editBoxEditingDidBegin(EditBox* editBox) {}
-=======
         virtual void editBoxEditingDidBegin(EditBox* /*editBox*/) {}
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when an edit box loses focus after keyboard is hidden.
          * @param editBox The edit box object that generated the event.
          * @deprecated Use editBoxEditingDidEndWithAction() instead to receive reason for end
          */
-<<<<<<< HEAD
-        CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* editBox) {}
-=======
         CC_DEPRECATED_ATTRIBUTE virtual void editBoxEditingDidEnd(EditBox* /*editBox*/) {}
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when the edit box text was changed.
          * @param editBox The edit box object that generated the event.
          * @param text The new text.
          */
-<<<<<<< HEAD
-        virtual void editBoxTextChanged(EditBox* editBox, const std::string& text) {}
-=======
         virtual void editBoxTextChanged(EditBox* /*editBox*/, const std::string& /*text*/) {}
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * This method is called when the return button was pressed or the outside area of keyboard was touched.
@@ -142,7 +130,6 @@ namespace ui {
             GO,
             NEXT
         };
-<<<<<<< HEAD
         
 // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
         /**
@@ -156,8 +143,6 @@ namespace ui {
             PUNCT = 1 << 4
         };
 // CROWDSTAR_COCOSPATCH_END
-=======
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
         /**
          * @brief The EditBox::InputMode defines the type of text that the user is allowed
@@ -253,10 +238,6 @@ namespace ui {
                                Scale9Sprite* pressedSprite = nullptr,
                                Scale9Sprite* disabledSprite = nullptr);
 
-<<<<<<< HEAD
-
-=======
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
@@ -482,22 +463,14 @@ namespace ui {
          * @return The text entered in the edit box.
          */
         const char* getText() const;
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         /**
          * Set the font. Only system font is allowed.
          * @param pFontName The font name.
          * @param fontSize The font size.
          */
         void setFont(const char* pFontName, int fontSize);
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         /**
          * Set the font name. Only system font is allowed.
          * @param pFontName The font name.
@@ -701,11 +674,8 @@ namespace ui {
          */
         virtual void keyboardDidHide(IMEKeyboardNotificationInfo& info) override;
 
-<<<<<<< HEAD
-        /* callback functions
-=======
+
         /**
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
          * @js NA
          * @lua NA
          * @deprecated Use openKeyboard() instead to open the keyboard
@@ -713,10 +683,7 @@ namespace ui {
         CC_DEPRECATED_ATTRIBUTE
         void touchDownAction(Ref *sender, TouchEventType controlEvent);
 
-<<<<<<< HEAD
-// CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxOpenKeyboard)
         void openKeyboard() const;
-// CROWDSTAR_COCOSPATCH_END
 
 // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
         /**
@@ -732,9 +699,6 @@ namespace ui {
          */
         void setUneditableTextLength(int uneditableTextLength);
 // CROWDSTAR_COCOSPATCH_END
-=======
-        void openKeyboard() const;
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
     protected:
         virtual void releaseUpEvent() override;

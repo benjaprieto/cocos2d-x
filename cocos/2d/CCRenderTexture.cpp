@@ -292,7 +292,7 @@ bool RenderTexture::initWithWidthAndHeight(int w, int h, Texture2D::PixelFormat 
 // CROWDSTAR_COCOSPATCH_BEGIN(CommentedSetAliasParameters)
 // The following line was commented
 // @todo [GMR.Ben] Add reason for commenting the line!
-//        _texture->setAliasTexParameters();
+//        _texture->setAntiAliasTexParameters();
 // CROWDSTAR_COCOSPATCH_END
         
         if (_textureCopy)

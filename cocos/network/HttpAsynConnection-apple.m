@@ -78,7 +78,7 @@
 #endif
     
     finish = false;
-    
+
     // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
     self.mach_start1 = CACurrentMediaTime();
     self.mach_start2 = 0;
@@ -169,7 +169,7 @@
     self.connError = error;
     
     finish = true;
-    
+
     // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
     double current_time = CACurrentMediaTime();
     self.mach_time1 = (current_time - self.mach_start1) * 1000;
@@ -184,7 +184,7 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     finish = true;
-    
+
     // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
     double current_time = CACurrentMediaTime();
     self.mach_time1 = (current_time - self.mach_start1) * 1000;

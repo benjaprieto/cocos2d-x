@@ -87,9 +87,7 @@ Ref::~Ref()
 
 #if CC_REF_LEAK_DETECTION
     if (_referenceCount != 0)
-    {
         untrackRef(this);
-    }
 #endif
 }
 

@@ -199,7 +199,7 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         if(gainAudioFocus)
             Cocos2dxAudioFocusManager.registerAudioFocusListener(this);
         this.hideVirtualButton();
-        resumeIfHasFocus();
+       	resumeIfHasFocus();
 
         Cocos2dxEngineDataManager.resume();
     }

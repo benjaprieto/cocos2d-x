@@ -77,7 +77,6 @@ EditBox::~EditBox()
 #endif
 }
 
-<<<<<<< HEAD
 // CROWDSTAR_COCOSPATCH_BEGIN(UIEditBoxCharacterRestrictions)
 void EditBox::setInputRestriction(int inputRestriction)
 {
@@ -95,12 +94,11 @@ void EditBox::setUneditableTextLength(int uneditableTextLength)
     }
 }
 // CROWDSTAR_COCOSPATCH_END
-=======
+
 void EditBox::openKeyboard() const
 {
     _editBoxImpl->openKeyboard();
 }
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
 
 void EditBox::touchDownAction(Ref* /*sender*/, TouchEventType controlEvent)
 {
@@ -160,20 +158,14 @@ bool EditBox::initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* no
     {
         _editBoxImpl = __createSystemEditBox(this);
         _editBoxImpl->initWithSize(size);
-<<<<<<< HEAD
         
 // CROWDSTAR_COCOSPATCH_BEGIN(CustomTextView)
 // @todo [GMR.Ben] Document why following line was commented
 //
-//        _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
+//      _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
 //
 // CROWDSTAR_COCOSPATCH_END
         
-        _backgroundSprite = pNormal9SpriteBg;
-        
-=======
-        _editBoxImpl->setInputMode(EditBox::InputMode::ANY);
-
         loadTextureNormal(normalSprite->getResourceName(), normalSprite->getResourceType() == 0 ? TextureResType::LOCAL : TextureResType::PLIST);
         if (pressedSprite != nullptr)
         {
@@ -184,7 +176,6 @@ bool EditBox::initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* no
             loadTexturePressed(disabledSprite->getResourceName(), disabledSprite->getResourceType() == 0 ? TextureResType::LOCAL : TextureResType::PLIST);
         }
 
->>>>>>> fea0b04aa6e96e56b4b6040ac3d051e04a62d473
         this->setContentSize(size);
 
         this->setTouchEnabled(true);

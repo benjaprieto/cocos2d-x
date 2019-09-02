@@ -776,7 +776,7 @@ void EventDispatcher::dispatchEventToListeners(EventListenerVector* listeners, c
                 {
 // CROWDSTAR_COCOSPATCH_BEGIN(StopPriorityListeners)
 // Commented Line!                    
-                    //shouldStopPropagation = true;
+//		    shouldStopPropagation = true;
 // CROWDSTAR_COCOSPATCH_END                
                     break;
                 }

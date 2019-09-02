@@ -535,12 +535,12 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
 
     // write data to HttpResponse
     response->setResponseCode(responseCode);
-    
+
 // CROWDSTAR_COCOSPATCH_BEGIN(HttpConnectionLatency)
     response->setLatencyClient(_latency_client);
     response->setLatencyServer(_latency_server);
- // CROWDSTAR_COCOSPATCH_END
-    
+// CROWDSTAR_COCOSPATCH_END
+
     if (retValue != 0)
     {
         response->setSucceed(true);

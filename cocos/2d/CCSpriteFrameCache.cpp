@@ -381,7 +381,7 @@ void SpriteFrameCache::addSpriteFramesWithFileContent(const std::string& plist_c
 
 // CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
 // In V 3.17.1 is now:
-// addSpriteFramesWithDictionary(dict, texture, "by#addSpriteFramesWithFileContent()");
+//  addSpriteFramesWithDictionary(dict, texture, "by#addSpriteFramesWithFileContent()");
     addSpriteFramesWithDictionary(dict, texture, plist_content);
 // CROWDSTAR_COCOSPATCH_END
 }
@@ -439,7 +439,7 @@ void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist)
 
         CCLOG("cocos2d: SpriteFrameCache: Trying to use file %s as texture", texturePath.c_str());
     }
-    
+
     addSpriteFramesWithDictionary(dict, texturePath, plist);
 
     // CROWDSTAR_COCOSPATCH_BEGIN(SpriteFrameNameGenerator)
